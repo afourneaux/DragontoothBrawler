@@ -1,0 +1,88 @@
+[gd_scene load_steps=3 format=3 uid="uid://ord0qayuyao"]
+
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_814jx"]
+
+[sub_resource type="GDScript" id="GDScript_l1sv3"]
+resource_name = "CharacterSelectMenu"
+script/source = "extends Control
+
+
+var _character_package = preload(\"res://Menus/UI/character.tscn\")
+var _player_package = preload(\"res://Menus/UI/player.tscn\")
+
+func _ready():
+	Server._on_update_serverside_player_data.connect(update_data)
+	for character in Globals.CHARACTER_NAMES.keys():
+		var character_instance = _character_package.instantiate()
+		character_instance.get_node(\"Label\").text = Globals.CHARACTER_NAMES[character]
+		#TODO Set character image
+		$CharacterList.add_child(character_instance)
+
+
+func update_data():
+	for child in $PlayerList.get_children():
+		$PlayerList.remove_child(child)
+	for player in Server._player_data:
+		var player_instance = _player_package.instantiate()
+		player_instance.get_node(\"Label\").text = Server._player_data[player].player_name
+		#TODO Selected Character & ready state
+		$PlayerList.add_child(player_instance)
+		
+"
+
+[node name="CharacterSelectMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_l1sv3")
+
+[node name="CharacterList" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -375.0
+offset_top = -175.0
+offset_right = 375.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 4
+
+[node name="PlayerList" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(150, 350)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -193.0
+offset_top = -175.0
+offset_right = -43.0
+offset_bottom = 175.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -100.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_814jx")
+toggle_mode = true
+text = "TEXT_READY"
