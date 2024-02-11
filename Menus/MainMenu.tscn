@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3 uid="uid://c0ne3vf1ut5jp"]
+
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="3_tfn80"]
+
+[sub_resource type="GDScript" id="GDScript_vv0uh"]
+resource_name = "Scripts/MainMenuPlayButton"
+script/source = "extends Button
+
+func _ready():
+	text = \"Play\"
+
+
+func _on_pressed():
+	Globals._on_scene_changed.emit(Globals.SCENE_LOBBY_MENU)
+"
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -25.0
+offset_right = 100.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_tfn80")
+text = "TEXT_PLAY"
+clip_text = true
+script = SubResource("GDScript_vv0uh")
+
+[connection signal="pressed" from="Button" to="Button" method="_on_pressed"]

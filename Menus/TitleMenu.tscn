@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://cgtvlcl111o0k"]
+
+[ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="1_ld4bc"]
+[ext_resource type="Texture2D" uid="uid://blu2rcswgr432" path="res://Assets/Sprites/Spiral_Staircase_logo.png" id="2_gwpmq"]
+
+[sub_resource type="GDScript" id="GDScript_ud6xk"]
+script/source = "extends Control
+
+func _ready():
+	$GameTitle.text = \"Dragontooth Brawl\"
+	Globals._on_scene_changed.connect(_change_menu)
+	Globals._on_scene_changed.emit(Globals.SCENE_MAIN_MENU)
+	# TODO Start music
+
+func _change_menu(menu_name):
+	var scene = load(\"res://Menus/%s.tscn\" % menu_name)
+	if scene == null:
+		push_error(
+			\"TitleMenu::change_menu - menu does not exist \\\"%s\\\"\" % menu_name)
+		return
+	for child in $ActiveMenu.get_children():
+		$ActiveMenu.remove_child(child)
+	$ActiveMenu.add_child(scene.instantiate())
+"
+
+[node name="TitleMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_ud6xk")
+
+[node name="GameTitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 30.0
+offset_bottom = 53.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("1_ld4bc")
+theme_override_font_sizes/font_size = 51
+text = "TEXT_TITLE"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
+offset_right = 250.0
+grow_vertical = 0
+texture = ExtResource("2_gwpmq")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ActiveMenu" type="Node" parent="."]
