@@ -45,8 +45,10 @@ func _on_host_button_pressed():
 	PlayerData.player_name = $Inputs/NameInput.text
 	if not PlayerData.player_name:
 		$Inputs/WarningText.text = \"Please enter a name\"
+		Audio.play_sfx(\"UICancel\")
 		return
-		
+	
+	Audio.play_sfx(\"UISelect\")
 	isMenuDisabled = true
 	
 	peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
@@ -62,11 +64,13 @@ func _on_join_button_pressed():
 	PlayerData.player_name = $Inputs/NameInput.text
 	if not PlayerData.player_name:
 		$Inputs/WarningText.text = \"Please enter a name\"
+		Audio.play_sfx(\"UICancel\")
 		return
+	
+	Audio.play_sfx(\"UISelect\")
 		
 	isMenuDisabled = true
 	
-	$Inputs/WarningText
 	var ip = $Inputs/IPInput.text
 	# TODO Validate
 	$Inputs/WarningText.text = \"Connecting...\"

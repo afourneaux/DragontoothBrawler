@@ -6,11 +6,16 @@
 [sub_resource type="GDScript" id="GDScript_ud6xk"]
 script/source = "extends Control
 
+var bg_music
+
 func _ready():
 	$GameTitle.text = \"Dragontooth Brawl\"
 	Globals._on_scene_changed.connect(_change_menu)
 	Globals._on_scene_changed.emit(Globals.SCENE_MAIN_MENU)
-	# TODO Start music
+
+func _process(delta):
+	if bg_music and !$MenuMusic.is_playing():
+		$MenuMusic.play()
 
 func _change_menu(menu_name):
 	var scene = load(\"res://Menus/%s.tscn\" % menu_name)
@@ -21,6 +26,9 @@ func _change_menu(menu_name):
 	for child in $ActiveMenu.get_children():
 		$ActiveMenu.remove_child(child)
 	$ActiveMenu.add_child(scene.instantiate())
+	#bg_music = load(\"res://Assets/Audio/Menus/%s.wav\" % menu_name) TODO Enable for menu music
+	if bg_music != null:
+		$MenuMusic.stream = bg_music
 "
 
 [node name="TitleMenu" type="Control"]
@@ -57,3 +65,5 @@ expand_mode = 1
 stretch_mode = 4
 
 [node name="ActiveMenu" type="Node" parent="."]
+
+[node name="MenuMusic" type="AudioStreamPlayer" parent="."]

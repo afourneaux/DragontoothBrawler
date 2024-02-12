@@ -40,7 +40,7 @@ func _client_send_player_data():
 	"""Send local data to the server"""
 	_server_receive_player_data.rpc_id(1, PlayerData.package_data())
 
-@rpc("any_peer", "reliable", "call_remote")
+@rpc("any_peer", "reliable", "call_local")
 func _server_receive_player_data(player_data):
 	"""Receive updated player data from the client"""
 	if not multiplayer.is_server():

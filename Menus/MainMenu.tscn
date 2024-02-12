@@ -12,6 +12,7 @@ func _ready():
 
 func _on_pressed():
 	Globals._on_scene_changed.emit(Globals.SCENE_LOBBY_MENU)
+	Audio.play_sfx(\"UISelect\")
 "
 
 [node name="MainMenu" type="Control"]
