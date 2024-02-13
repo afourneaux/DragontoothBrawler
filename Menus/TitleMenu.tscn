@@ -6,8 +6,6 @@
 [sub_resource type="GDScript" id="GDScript_ud6xk"]
 script/source = "extends Control
 
-var player_data_package = preload('res://Prefabs/player_data.tscn')
-
 func _ready():
 	$GameTitle.text = \"Dragontooth Brawl\"
 	_init_main_menu()
