@@ -6,6 +6,8 @@
 resource_name = "LobbyMenu"
 script/source = "extends Control
 
+signal _on_join
+
 const DEFAULT_PORT = 7000
 const TIMEOUT_OVERRIDE = 5
 
@@ -13,6 +15,7 @@ var _current_timeout_count = 0
 var _connection_status = 0
 
 var isMenuDisabled = false
+var player_name = ''
 @onready var peer = ENetMultiplayerPeer.new()
 
 # Called when the node enters the scene tree for the first time.
@@ -42,8 +45,9 @@ func _on_host_button_pressed():
 	if isMenuDisabled:
 		return
 	
-	PlayerData.player_name = $Inputs/NameInput.text
-	if not PlayerData.player_name:
+	player_name = $Inputs/NameInput.text
+	
+	if not player_name:
 		$Inputs/WarningText.text = \"Please enter a name\"
 		Audio.play_sfx(\"UICancel\")
 		return
@@ -53,16 +57,15 @@ func _on_host_button_pressed():
 	
 	peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
 	multiplayer.multiplayer_peer = peer
-	Globals._on_scene_changed.emit(Globals.SCENE_CHARACTER_MENU)
-	Server.is_hosting = true
+	_on_join.emit(player_name)
 
 
 func _on_join_button_pressed():
 	if isMenuDisabled:
 		return
 	
-	PlayerData.player_name = $Inputs/NameInput.text
-	if not PlayerData.player_name:
+	player_name = $Inputs/NameInput.text
+	if not player_name:
 		$Inputs/WarningText.text = \"Please enter a name\"
 		Audio.play_sfx(\"UICancel\")
 		return
@@ -88,7 +91,7 @@ func _on_connection_failed():
 
 func _on_connection_success():
 	$Inputs/WarningText.text = \"Connection succeeded\"
-	Globals._on_scene_changed.emit(Globals.SCENE_CHARACTER_MENU)
+	_on_join.emit(player_name)
 "
 
 [node name="LobbyMenu" type="Control"]

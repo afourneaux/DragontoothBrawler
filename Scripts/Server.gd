@@ -1,50 +1,38 @@
 extends Node
 
-signal _on_update_serverside_player_data()
+signal on_data_changed
 
-var _player_data = {}
-var _is_data_dirty = false
-var _is_server_configured = false
-var is_hosting = false
+var _player_data = {}:
+	set(value):
+		_player_data = value
+		on_data_changed.emit()
+		if multiplayer.is_server():
+			_send_data_to_clients.rpc(_player_data)
 
 func _ready():
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-	multiplayer.connected_to_server.connect(_enable_data_sending)
-
-func _process(delta):
-	if not is_hosting:
-		return
-	if not _is_server_configured:
-		PlayerData._on_update_player_data.connect(_client_send_player_data)
-		_player_data[1] = PlayerData.package_data()
-		_on_update_serverside_player_data.emit()
-		_is_server_configured = true
-	if _is_data_dirty:
-		_server_update_player_state.rpc(_player_data)
-		_is_data_dirty = false
+	multiplayer.connected_to_server.connect(_register_new_player)
+	PlayerData.on_update_player_data.connect(_client_send_player_data)
 
 func _on_peer_disconnected(id):
 	_player_data.erase(id)
-	_is_data_dirty = true
+	_send_data_to_clients(_player_data)
 
-@rpc("authority", "reliable", "call_local")
-func _server_update_player_state(player_data):
-	_player_data = player_data
-	_on_update_serverside_player_data.emit()
+func _register_new_player():
+	_client_send_player_data(PlayerData.package_data())
 
-func _enable_data_sending():
-	PlayerData._on_update_player_data.connect(_client_send_player_data)
-	_client_send_player_data()
-
-func _client_send_player_data():
+func _client_send_player_data(player_data):
 	"""Send local data to the server"""
-	_server_receive_player_data.rpc_id(1, PlayerData.package_data())
+	_send_data_to_server.rpc_id(1, player_data)
 
 @rpc("any_peer", "reliable", "call_local")
-func _server_receive_player_data(player_data):
+func _send_data_to_server(player_data):
 	"""Receive updated player data from the client"""
 	if not multiplayer.is_server():
 		return
-	var sender_id = multiplayer.get_remote_sender_id()
-	_player_data[sender_id] = player_data
-	_is_data_dirty = true
+	_player_data[multiplayer.get_remote_sender_id()] = player_data
+	_send_data_to_clients(_player_data)
+
+@rpc("authority", "reliable", "call_remote")
+func _send_data_to_clients(player_data):
+	_player_data = player_data

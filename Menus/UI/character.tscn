@@ -7,16 +7,16 @@
 resource_name = "CharacterSelection"
 script/source = "extends Panel
 
-var character;
+signal _on_pressed
+
+var character = Globals.Character.NONE
 var mouseOver = false
 var is_selected = false
 
 func _input(event):
-	if !PlayerData.is_ready and !is_selected and event is InputEventMouseButton:
-		if event.is_pressed() and mouseOver:
-			PlayerData.selected_character = character
-			PlayerData._on_update_player_data.emit()
-			Audio.play_sfx(\"UISelect\")
+	if !is_selected and event is InputEventMouseButton \\
+		and event.is_pressed() and mouseOver:
+			_on_pressed.emit(character)
 
 func _process(delta):
 	if is_selected:
@@ -24,10 +24,8 @@ func _process(delta):
 	else:
 		modulate = Color(1, 1, 1, 1)
 
-
 func _on_mouse_entered():
 	mouseOver = true;
-
 
 func _on_mouse_exited():
 	mouseOver = false;
