@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bl4cwlx170c4f"
-path="res://.godot/imported/theme_3.wav-fb03a80b7e6e2851da525fb0a59b7fe1.sample"
+path="res://.godot/imported/Eire.wav-067759181e7156bf047f576fce16c310.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/Characters/theme_3.wav"
-dest_files=["res://.godot/imported/theme_3.wav-fb03a80b7e6e2851da525fb0a59b7fe1.sample"]
+source_file="res://Assets/Audio/Characters/Eire.wav"
+dest_files=["res://.godot/imported/Eire.wav-067759181e7156bf047f576fce16c310.sample"]
 
 [params]
 

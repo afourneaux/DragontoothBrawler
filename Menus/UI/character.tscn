@@ -38,6 +38,7 @@ size_flags_vertical = 6
 script = SubResource("GDScript_i14nw")
 
 [node name="Portrait" type="TextureRect" parent="."]
+texture_filter = 1
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 1
 anchors_preset = 5

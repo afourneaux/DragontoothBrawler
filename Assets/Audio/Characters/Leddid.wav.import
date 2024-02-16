@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://douihlrhxgl02"
-path="res://.godot/imported/theme_4.wav-9f5bc7c63f0e999474528850ae909fb0.sample"
+path="res://.godot/imported/Leddid.wav-21bc5303647a8dc5419aee27e028dcc5.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/Characters/theme_4.wav"
-dest_files=["res://.godot/imported/theme_4.wav-9f5bc7c63f0e999474528850ae909fb0.sample"]
+source_file="res://Assets/Audio/Characters/Leddid.wav"
+dest_files=["res://.godot/imported/Leddid.wav-21bc5303647a8dc5419aee27e028dcc5.sample"]
 
 [params]
 

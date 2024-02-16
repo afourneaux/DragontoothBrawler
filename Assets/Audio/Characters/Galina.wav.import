@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dgpli377ksfs8"
-path="res://.godot/imported/theme_6.wav-0ab9618870ff13cdfcaaa62f481d2db8.sample"
+path="res://.godot/imported/Galina.wav-ac73abd2a86149400f1fcca7bbab8b4d.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/Characters/theme_6.wav"
-dest_files=["res://.godot/imported/theme_6.wav-0ab9618870ff13cdfcaaa62f481d2db8.sample"]
+source_file="res://Assets/Audio/Characters/Galina.wav"
+dest_files=["res://.godot/imported/Galina.wav-ac73abd2a86149400f1fcca7bbab8b4d.sample"]
 
 [params]
 

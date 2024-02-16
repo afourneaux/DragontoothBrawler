@@ -18,6 +18,7 @@ func _ready():
 		var character_instance = _character_package.instantiate()
 		character_instance.get_node('Label').text = Globals.CHARACTER_NAMES[character]
 		character_instance.character = character
+		character_instance.get_node('Portrait').texture = get_character_portrait(character)
 		character_instance._on_pressed.connect(_on_character_pressed)
 		#TODO Set character image
 		$CharacterList.add_child(character_instance)
@@ -33,6 +34,7 @@ func _update_player_data():
 	for player in player_data:
 		var player_instance = _player_package.instantiate()
 		player_instance.get_node(\"Label\").text = player_data[player][PlayerData.Field.NAME]
+		player_instance.get_node(\"SelectedCharacter\").texture = get_character_portrait(player_data[player][PlayerData.Field.CHARACTER])
 		if player_data[player][PlayerData.Field.READY]:
 			player_instance.modulate = Color(0.1, 1, 0.1, 1)
 		else:
@@ -45,6 +47,7 @@ func _update_player_data():
 func _on_character_pressed(character):
 	if !PlayerData.is_ready:
 		PlayerData.selected_character = character
+		Audio.play_bg_music(load(\"res://Assets/Audio/Characters/%s.wav\" % Globals.CHARACTER_NAMES[character]))
 		Audio.play_sfx(\"UISelect\")
 
 func _on_button_toggled(toggled_on):
@@ -57,6 +60,15 @@ func _on_button_toggled(toggled_on):
 		Audio.play_sfx(\"UISelect\")
 	else:
 		Audio.play_sfx(\"UICancel\")
+
+func get_character_portrait(character):
+	var portrait_package = null
+	if Globals.CHARACTER_NAMES.has(character):
+		portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % Globals.CHARACTER_NAMES[character])
+	if portrait_package == null:
+		portrait_package = load(\"res://Assets/Sprites/invalid.bmp\")
+	return portrait_package
+	
 "
 
 [node name="CharacterSelectMenu" type="Control"]

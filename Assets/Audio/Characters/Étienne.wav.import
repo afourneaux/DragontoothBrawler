@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dabetagqdc0ff"
-path="res://.godot/imported/theme_1.wav-ceb2c9b45e9db04507e06ec4ad1b830f.sample"
+path="res://.godot/imported/Étienne.wav-e75b9f74f2c3f91e1f2549407c28d7f8.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/Characters/theme_1.wav"
-dest_files=["res://.godot/imported/theme_1.wav-ceb2c9b45e9db04507e06ec4ad1b830f.sample"]
+source_file="res://Assets/Audio/Characters/Étienne.wav"
+dest_files=["res://.godot/imported/Étienne.wav-e75b9f74f2c3f91e1f2549407c28d7f8.sample"]
 
 [params]
 
