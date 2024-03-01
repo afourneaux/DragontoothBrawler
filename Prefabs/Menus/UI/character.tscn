@@ -1,0 +1,74 @@
+[gd_scene load_steps=4 format=3 uid="uid://cuylsun8iko7f"]
+
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_mbrrs"]
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_heoxc"]
+
+[sub_resource type="GDScript" id="GDScript_i14nw"]
+resource_name = "CharacterSelection"
+script/source = "extends Panel
+
+signal _on_pressed
+
+var character = Globals.Character.NONE
+var mouseOver = false
+var is_selected = false
+
+func _input(event):
+	if !is_selected and event is InputEventMouseButton \\
+		and event.is_pressed() and mouseOver:
+			_on_pressed.emit(character)
+
+func _process(delta):
+	if is_selected:
+		modulate = Color(0.2, 0.2, 0.2, 1)
+	else:
+		modulate = Color(1, 1, 1, 1)
+
+func _on_mouse_entered():
+	mouseOver = true;
+
+func _on_mouse_exited():
+	mouseOver = false;
+"
+
+[node name="Character" type="Panel"]
+custom_minimum_size = Vector2(100, 150)
+size_flags_horizontal = 6
+size_flags_vertical = 6
+script = SubResource("GDScript_i14nw")
+
+[node name="Portrait" type="TextureRect" parent="."]
+texture_filter = 1
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_right = 50.0
+offset_bottom = 100.0
+grow_horizontal = 2
+texture = ExtResource("1_mbrrs")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="."]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_heoxc")
+text = "CHARACTER_NAME"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

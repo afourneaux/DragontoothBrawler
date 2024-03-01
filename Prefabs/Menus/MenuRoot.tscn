@@ -1,0 +1,110 @@
+[gd_scene load_steps=6 format=3 uid="uid://cgtvlcl111o0k"]
+
+[ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="1_t3m4n"]
+[ext_resource type="Texture2D" uid="uid://blu2rcswgr432" path="res://Assets/Sprites/Spiral_Staircase_logo.png" id="2_ji87e"]
+[ext_resource type="Texture2D" uid="uid://dmk8t6fk2cu2p" path="res://Assets/Sprites/UI/audioOn.png" id="3_p1bw4"]
+[ext_resource type="Texture2D" uid="uid://dui1a12ltbopm" path="res://Assets/Sprites/UI/audioOff.png" id="4_t1sad"]
+
+[sub_resource type="GDScript" id="GDScript_ud6xk"]
+script/source = "extends Control
+
+func _ready():
+	$GameTitle.text = \"Dragontooth Brawl\"
+	_init_main_menu()
+
+func _clear_old_menu():
+	for child in $ActiveMenu.get_children():
+		child.queue_free()
+
+func _init_main_menu():
+	_clear_old_menu()
+	var scene = load(\"res://Prefabs/Menus/MainMenu.tscn\").instantiate()
+	scene._on_advance.connect(_init_lobby_menu)
+	$ActiveMenu.add_child(scene)
+	var music = load(\"res://Assets/Audio/Menus/MainMenu.wav\") # TODO Enable for menu music
+	if music != null:
+		Audio.play_bg_music(music)
+
+func _init_lobby_menu():
+	_clear_old_menu()
+	var scene = load(\"res://Prefabs/Menus/LobbyMenu.tscn\").instantiate()
+	scene._on_join.connect(_start_multiplayer)
+	$ActiveMenu.add_child(scene)
+
+func _start_multiplayer(player_name):
+	PlayerData.player_name = player_name
+	_init_character_select_menu()
+
+func _init_character_select_menu():
+	_clear_old_menu()
+	var scene = load(\"res://Prefabs/Menus/CharacterSelectMenu.tscn\").instantiate()
+	scene.on_start_game.connect(start_game)
+	$ActiveMenu.add_child(scene)
+	var music = load(\"res://Assets/Audio/Menus/CharacterSelectMenu.wav\")
+	if music != null:
+		Audio.play_bg_music(music)
+
+func start_game():
+	var game_scene = load(\"res://Prefabs/GameRoot.tscn\").instantiate()
+	get_tree().root.add_child(game_scene, true)
+	queue_free()
+
+
+func _on_mute_btn_toggled(toggled_on):
+	if toggled_on:
+		Audio.mute()
+	else:
+		Audio.unmute()
+"
+
+[node name="MenuRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_ud6xk")
+
+[node name="GameTitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 30.0
+offset_bottom = 53.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("1_t3m4n")
+theme_override_font_sizes/font_size = 51
+text = "TEXT_TITLE"
+horizontal_alignment = 1
+
+[node name="SSPLogo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
+offset_right = 250.0
+grow_vertical = 0
+texture = ExtResource("2_ji87e")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Mute" type="TextureButton" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -55.0
+offset_right = -5.0
+offset_bottom = 50.0
+grow_horizontal = 0
+toggle_mode = true
+texture_normal = ExtResource("3_p1bw4")
+texture_pressed = ExtResource("4_t1sad")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="ActiveMenu" type="Node" parent="."]
+
+[connection signal="toggled" from="Mute" to="." method="_on_mute_btn_toggled"]

@@ -1,0 +1,189 @@
+[gd_scene load_steps=4 format=3 uid="uid://ord0qayuyao"]
+
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_2rumt"]
+[ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="2_5enw6"]
+
+[sub_resource type="GDScript" id="GDScript_l1sv3"]
+resource_name = "CharacterSelectMenu"
+script/source = "extends Control
+
+signal on_start_game
+
+var _character_package = preload(\"res://Prefabs/Menus/UI/character.tscn\")
+var _player_package = preload(\"res://Prefabs/Menus/UI/player.tscn\")
+
+var character_panels = {}
+var is_game_starting = false
+var TIME_TO_START = 5
+var start_timer = 0
+
+func _ready():
+	$Button.text = \"Ready\"
+	Server.on_data_changed.connect(_update_player_data)
+	for character in Globals.CHARACTER_NAMES.keys():
+		var character_instance = _character_package.instantiate()
+		character_instance.get_node('Label').text = Globals.CHARACTER_NAMES[character]
+		character_instance.character = character
+		character_instance.get_node('Portrait').texture = get_character_portrait(character)
+		character_instance._on_pressed.connect(_on_character_pressed) 
+		$CharacterList.add_child(character_instance)
+		character_panels[character] = character_instance
+	_update_player_data()
+
+func _process(delta):
+	if is_game_starting:
+		start_timer -= delta
+		$Countdown.text = str(ceil(start_timer))
+		if multiplayer.is_server() and start_timer <= 0:
+			start_game.rpc()
+
+func _update_player_data():
+	var player_data = Server._player_data
+	var all_ready = Globals.DEBUG_SINGLE_PLAYER or len(Server._player_data) > 1
+	for child in $PlayerList.get_children():
+		child.queue_free()
+	for character in character_panels:
+		character_panels[character].is_selected = false
+	for player in player_data:
+		var player_instance = _player_package.instantiate()
+		player_instance.get_node(\"Label\").text = player_data[player][PlayerData.Field.NAME]
+		player_instance.get_node(\"SelectedCharacter\").texture = get_character_portrait(player_data[player][PlayerData.Field.CHARACTER])
+		if player_data[player][PlayerData.Field.READY]:
+			player_instance.modulate = Color(0.1, 1, 0.1, 1)
+		else:
+			player_instance.modulate = Color(1, 0.1, 0.1, 1)
+			all_ready = false
+		if player_data[player][PlayerData.Field.CHARACTER] != Globals.Character.NONE:
+			character_panels[player_data[player][PlayerData.Field.CHARACTER]].is_selected = true
+			if all_ready and !is_game_starting:
+				start_countdown.rpc()
+			elif !all_ready and is_game_starting:
+				stop_countdown.rpc()
+		$PlayerList.add_child(player_instance)
+
+func _on_character_pressed(character):
+	if !PlayerData.is_ready:
+		PlayerData.selected_character = character
+		Audio.play_bg_music(load(\"res://Assets/Audio/Characters/%s.wav\" % Globals.CHARACTER_NAMES[character]))
+		Audio.play_sfx(\"UISelect\")
+
+func _on_button_toggled(toggled_on):
+	if !PlayerData.is_ready and PlayerData.selected_character == Globals.Character.NONE:
+		Audio.play_sfx(\"UICancel\")
+		$Button.button_pressed = false
+		return
+	PlayerData.is_ready = toggled_on
+	if toggled_on:
+		Audio.play_sfx(\"UISelect\")
+	else:
+		Audio.play_sfx(\"UICancel\")
+
+func get_character_portrait(character):
+	var portrait_package = null
+	if Globals.CHARACTER_NAMES.has(character):
+		portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % Globals.CHARACTER_NAMES[character])
+	if portrait_package == null:
+		portrait_package = load(\"res://Assets/Sprites/invalid.bmp\")
+	return portrait_package
+	
+@rpc(\"authority\", \"reliable\", \"call_local\")
+func start_countdown():
+	$Countdown.visible = true
+	is_game_starting = true
+	start_timer = TIME_TO_START
+
+@rpc(\"authority\", \"reliable\", \"call_local\")
+func stop_countdown():
+	$Countdown.visible = false
+	is_game_starting = false
+
+@rpc(\"authority\", \"reliable\", \"call_local\")
+func start_game():
+	on_start_game.emit()
+"
+
+[node name="CharacterSelectMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = SubResource("GDScript_l1sv3")
+
+[node name="CharacterList" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -375.0
+offset_top = -175.0
+offset_right = 375.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+columns = 4
+
+[node name="PlayerList" type="GridContainer" parent="."]
+custom_minimum_size = Vector2(150, 350)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -193.0
+offset_top = -175.0
+offset_right = -43.0
+offset_bottom = 175.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -100.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("1_2rumt")
+toggle_mode = true
+text = "TEXT_READY"
+
+[node name="Countdown" type="Label" parent="."]
+visible = false
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -6.5
+offset_top = -11.0
+offset_right = 6.5
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 50
+theme_override_constants/shadow_outline_size = 50
+theme_override_fonts/font = ExtResource("2_5enw6")
+theme_override_font_sizes/font_size = 150
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="toggled" from="Button" to="." method="_on_button_toggled"]

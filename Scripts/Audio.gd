@@ -4,6 +4,7 @@ var tracked_nodes = {}
 var audio_ids = 0
 var bg_node
 var bg_music
+var muted = false
 
 func _enter_tree():
 	bg_node = AudioStreamPlayer.new()
@@ -16,7 +17,7 @@ func _process(delta):
 				tracked_nodes[node].node.play()
 			else:
 				stop_sfx(node)
-	if bg_music and !bg_node.is_playing():
+	if bg_music and !bg_node.is_playing() and !muted:
 		bg_node.play()
 
 func play_bg_music(value):
@@ -26,7 +27,6 @@ func play_bg_music(value):
 			bg_node.stop()
 		else:
 			bg_node.stream = bg_music
-			bg_node.play()
 
 func play_sfx(audio, loop=false):
 	var audio_resource = load("res://Assets/Audio/%s.wav" % audio)
@@ -36,7 +36,8 @@ func play_sfx(audio, loop=false):
 	var audio_node = AudioStreamPlayer.new()
 	add_child(audio_node)
 	audio_node.stream = audio_resource
-	audio_node.play()
+	if not muted:
+		audio_node.play()
 	audio_ids = audio_ids + 1
 	tracked_nodes[audio_ids] = {
 		"node": audio_node,
@@ -47,3 +48,12 @@ func play_sfx(audio, loop=false):
 func stop_sfx(audio_id):
 	tracked_nodes[audio_id].node.queue_free()
 	tracked_nodes.erase(audio_id)
+
+func mute():
+	muted = true
+	for node in tracked_nodes:
+		stop_sfx(node)
+	bg_node.stop()
+
+func unmute():
+	muted = false

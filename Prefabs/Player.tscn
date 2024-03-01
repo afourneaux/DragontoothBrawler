@@ -1,0 +1,142 @@
+[gd_scene load_steps=8 format=3 uid="uid://cvftqky6unyrj"]
+
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_tgh88"]
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_nb5ko"]
+
+[sub_resource type="GDScript" id="GDScript_7glg2"]
+resource_name = "Player"
+script/source = "extends CharacterBody2D
+
+const SPEED = 300
+const FRICTION = 5
+const JUMP_HEIGHT = 500
+
+var gravity = ProjectSettings.get_setting(\"physics/3d/default_gravity\") * 100
+
+@export var player_id = 1:
+	set (value):
+		player_id = value
+		$PlayerInput.set_multiplayer_authority(value)
+		
+@onready var input = $PlayerInput
+
+
+func _ready():
+	$Name.text = Server._player_data[name.to_int()][PlayerData.Field.NAME]
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+func _physics_process(delta):
+	if not is_on_floor():
+		velocity.y += gravity * delta
+		if velocity.y > 0:
+			pass
+			# TODO: Play fall animation
+
+	if input.lr_movement != 0:
+		velocity.x = lerpf(velocity.x, input.lr_movement * SPEED, delta)
+		# TODO: Play walk animation
+	elif is_on_floor():
+		velocity.x = lerpf(velocity.x, 0, delta * FRICTION)
+		# TODO: Play stand animation
+	
+	if input.is_jumping and is_on_floor():
+		velocity.y = -JUMP_HEIGHT
+		#TODO: Play jump animation
+	input.is_jumping = false
+	
+	move_and_slide()
+"
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_3fibl"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("AnimatedSprite2D:animation")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath("AnimatedSprite2D:flip_h")
+properties/2/spawn = false
+properties/2/replication_mode = 2
+properties/3/path = NodePath("AnimatedSprite2D:visible")
+properties/3/spawn = false
+properties/3/replication_mode = 2
+properties/4/path = NodePath("AnimatedSprite2D:modulate")
+properties/4/spawn = false
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:player_id")
+properties/5/spawn = true
+properties/5/replication_mode = 0
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nygse"]
+properties/0/path = NodePath(".:lr_movement")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[sub_resource type="GDScript" id="GDScript_13shx"]
+resource_name = "PlayerInput"
+script/source = "extends MultiplayerSynchronizer
+
+
+@export var lr_movement = 0
+var is_jumping = false
+
+func _ready():
+	set_process(is_multiplayer_authority())
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	lr_movement = 0
+	if Input.is_action_pressed(\"move_left\"):
+		lr_movement -= 1
+	if Input.is_action_pressed(\"move_right\"):
+		lr_movement += 1
+	if Input.is_action_just_pressed(\"jump\"):
+		jump.rpc()
+
+@rpc(\"call_local\")
+func jump():
+	is_jumping = true
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
+size = Vector2(16, 16)
+
+[node name="Player" type="CharacterBody2D"]
+script = SubResource("GDScript_7glg2")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_3fibl")
+
+[node name="PlayerInput" type="MultiplayerSynchronizer" parent="."]
+root_path = NodePath(".")
+replication_config = SubResource("SceneReplicationConfig_nygse")
+script = SubResource("GDScript_13shx")
+
+[node name="Name" type="Label" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -36.5
+offset_top = -50.0
+offset_right = 36.5
+offset_bottom = -27.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_nb5ko")
+text = "TEXT_NAME"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(1, 2)
+sprite_frames = ExtResource("1_tgh88")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(1, 2)
+shape = SubResource("RectangleShape2D_s81vj")

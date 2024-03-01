@@ -1,0 +1,131 @@
+[gd_scene load_steps=4 format=3 uid="uid://b3lmfcik1cwwm"]
+
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_2f75f"]
+
+[sub_resource type="GDScript" id="GDScript_yc5rg"]
+resource_name = "Game"
+script/source = "extends Node
+
+var spawner_timers = []
+const SPAWNER_REFRESH_TIME = 10
+var spawn_queue = []
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	var music = load(\"res://Assets/Audio/battle_theme.wav\")
+	Audio.play_bg_music(music)
+	for spawner in range($Level/Spawners.get_child_count()):
+		spawner_timers.append(0)
+	# TODO: Create UI guff
+	request_spawn.rpc_id(1)
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	for spawner in range(len(spawner_timers)):
+		spawner_timers[spawner] -= delta
+	if multiplayer.is_server():
+		for player in spawn_queue:
+			spawn(player)
+		spawn_queue.clear()
+
+func get_spawner():
+	var index
+	var valid_indices = []
+	for spawner in range(len(spawner_timers)):
+		if spawner_timers[spawner] <= 0:
+			valid_indices.append(spawner)
+	if valid_indices:
+		index = valid_indices.pick_random()
+	else:
+		# All spawners are on cooldown - get the closest to being ready
+		index = spawner_timers.find(spawner_timers.min())
+	spawner_timers[index] = SPAWNER_REFRESH_TIME
+	return index
+
+func spawn(player_id):
+	var spawner = get_spawner()
+	var character = load(\"res://Prefabs/Player.tscn\").instantiate()
+	character.name = str(player_id)
+	character.position = $Level/Spawners.get_child(spawner).position
+	character.player_id = player_id
+	$Players.add_child(character, true)
+
+@rpc(\"any_peer\", \"reliable\", \"call_local\")
+func request_spawn():
+	spawn_queue.append(multiplayer.get_remote_sender_id())
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]
+size = Vector2(16, 16)
+
+[node name="GameRoot" type="Node"]
+script = SubResource("GDScript_yc5rg")
+
+[node name="Level" type="Node2D" parent="."]
+
+[node name="Spawners" type="Node" parent="Level"]
+
+[node name="0" type="Node2D" parent="Level/Spawners"]
+position = Vector2(178, 497)
+
+[node name="1" type="Node2D" parent="Level/Spawners"]
+position = Vector2(89, 105)
+
+[node name="2" type="Node2D" parent="Level/Spawners"]
+position = Vector2(455, 497)
+
+[node name="3" type="Node2D" parent="Level/Spawners"]
+position = Vector2(636, 344)
+
+[node name="4" type="Node2D" parent="Level/Spawners"]
+position = Vector2(1007, 358)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Level"]
+position = Vector2(324, 568)
+scale = Vector2(34.36, 2.52)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D"]
+position = Vector2(0, -2.38419e-07)
+shape = SubResource("RectangleShape2D_2gbds")
+
+[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D"]
+texture = ExtResource("1_2f75f")
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="Level"]
+position = Vector2(800, 414)
+scale = Vector2(34.36, 2.52)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D2"]
+position = Vector2(0, -2.38419e-07)
+shape = SubResource("RectangleShape2D_2gbds")
+
+[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D2"]
+texture = ExtResource("1_2f75f")
+
+[node name="StaticBody2D3" type="StaticBody2D" parent="Level"]
+position = Vector2(85, 302)
+scale = Vector2(3.74842, 19.5922)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D3"]
+position = Vector2(0, -2.38419e-07)
+shape = SubResource("RectangleShape2D_2gbds")
+
+[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D3"]
+texture = ExtResource("1_2f75f")
+
+[node name="Effects" type="Node2D" parent="."]
+
+[node name="Players" type="Node" parent="."]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://Prefabs/Player.tscn")
+spawn_path = NodePath("../Players")

@@ -1,0 +1,169 @@
+[gd_scene load_steps=3 format=3 uid="uid://dlys5owhu1eur"]
+
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_0bo8v"]
+
+[sub_resource type="GDScript" id="GDScript_nmaft"]
+resource_name = "LobbyMenu"
+script/source = "extends Control
+
+signal _on_join
+
+const DEFAULT_PORT = 7000
+const TIMEOUT_OVERRIDE = 5
+
+var _current_timeout_count = 0
+var _connection_status = 0
+
+var isMenuDisabled = false
+var player_name = ''
+@onready var peer = ENetMultiplayerPeer.new()
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	$Inputs/HostButton.text = \"Host Game\"
+	$Inputs/JoinButton.text = \"Join Game\"
+	$Inputs/IPInput.placeholder_text = \"IP Address...\"
+	$Inputs/NameInput.placeholder_text = \"Name...\"
+	multiplayer.connection_failed.connect(_on_connection_failed)
+	multiplayer.server_disconnected.connect(_on_connection_failed)
+	multiplayer.connected_to_server.connect(_on_connection_success)
+	
+
+func _process(delta):
+	var new_status = peer.get_connection_status()
+	if _connection_status == 1:
+		if new_status == 1:
+			if _current_timeout_count >= TIMEOUT_OVERRIDE:
+				_on_connection_failed()
+		else:
+			_current_timeout_count = 0
+		_current_timeout_count += delta
+	_connection_status = new_status
+
+
+func _on_host_button_pressed():
+	if isMenuDisabled:
+		return
+	
+	player_name = $Inputs/NameInput.text
+	
+	if not player_name:
+		$Inputs/WarningText.text = \"Please enter a name\"
+		Audio.play_sfx(\"UICancel\")
+		return
+	
+	Audio.play_sfx(\"UISelect\")
+	isMenuDisabled = true
+	
+	peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
+	multiplayer.multiplayer_peer = peer
+	_on_join.emit(player_name)
+
+
+func _on_join_button_pressed():
+	if isMenuDisabled:
+		return
+	
+	player_name = $Inputs/NameInput.text
+	if not player_name:
+		$Inputs/WarningText.text = \"Please enter a name\"
+		Audio.play_sfx(\"UICancel\")
+		return
+	
+	Audio.play_sfx(\"UISelect\")
+		
+	isMenuDisabled = true
+	
+	var ip = $Inputs/IPInput.text
+	# TODO Validate
+	$Inputs/WarningText.text = \"Connecting...\"
+	var error = peer.create_client(ip, DEFAULT_PORT)
+	if error:
+		_on_connection_failed()
+		return
+	multiplayer.multiplayer_peer = peer
+
+func _on_connection_failed():
+	isMenuDisabled = false
+	$Inputs/WarningText.text = \"Connection failed\"
+	peer.close()
+	multiplayer.multiplayer_peer = null
+
+func _on_connection_success():
+	$Inputs/WarningText.text = \"Connection succeeded\"
+	_on_join.emit(player_name)
+"
+
+[node name="LobbyMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = SubResource("GDScript_nmaft")
+
+[node name="Inputs" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -400.0
+offset_right = 250.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="NameInput" type="LineEdit" parent="Inputs"]
+custom_minimum_size = Vector2(250, 30)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("1_0bo8v")
+placeholder_text = "TEXT_NAME"
+context_menu_enabled = false
+drag_and_drop_selection_enabled = false
+
+[node name="HostButton" type="Button" parent="Inputs"]
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+theme_override_fonts/font = ExtResource("1_0bo8v")
+text = "TEXT_HOST"
+
+[node name="IPInput" type="LineEdit" parent="Inputs"]
+custom_minimum_size = Vector2(250, 30)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 10
+theme_override_fonts/font = ExtResource("1_0bo8v")
+placeholder_text = "TEXT_IP
+"
+context_menu_enabled = false
+drag_and_drop_selection_enabled = false
+
+[node name="JoinButton" type="Button" parent="Inputs"]
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 2
+theme_override_fonts/font = ExtResource("1_0bo8v")
+text = "TEXT_JOIN"
+
+[node name="WarningText" type="Label" parent="Inputs"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("1_0bo8v")
+horizontal_alignment = 1
+autowrap_mode = 3
+text_overrun_behavior = 4
+
+[connection signal="pressed" from="Inputs/HostButton" to="." method="_on_host_button_pressed"]
+[connection signal="pressed" from="Inputs/JoinButton" to="." method="_on_join_button_pressed"]

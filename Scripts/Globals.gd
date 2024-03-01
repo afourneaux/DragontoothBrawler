@@ -16,3 +16,5 @@ const CHARACTER_NAMES = {
 	Character.SAYARAT: "Sayarat",
 	Character.SIMFIR: "Simfir"
 }
+
+const DEBUG_SINGLE_PLAYER = true
