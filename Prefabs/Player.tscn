@@ -7,19 +7,34 @@
 resource_name = "Player"
 script/source = "extends CharacterBody2D
 
-const SPEED = 300
+signal on_death
+
+# TODO: values configurable by character
+# Data sheet? Child classes?
+# TODO: Split animation into another file with signals
+# TODO: Split physics into another file with signals
+# TODO: Split status e.g. health into another file
+const SPEED = 400
 const FRICTION = 5
-const JUMP_HEIGHT = 500
+const JUMP_HEIGHT = 800
+const FLOATY_FACTOR = 3  # Low for floaty. Adjust JUMP_HEIGHT to balance
 
-var gravity = ProjectSettings.get_setting(\"physics/3d/default_gravity\") * 100
+const WALLJUMP_FACTOR = 0.8
+const WALLJUMP_PUSH = 50
 
-@export var player_id = 1:
+var gravity = ProjectSettings.get_setting(\"physics/2d/default_gravity\") * FLOATY_FACTOR
+var is_animation_state_set_this_frame = false
+
+var player_id = 1:
 	set (value):
 		player_id = value
 		$PlayerInput.set_multiplayer_authority(value)
-		
+
 @onready var input = $PlayerInput
 
+
+func die():
+	on_death.emit()
 
 func _ready():
 	$Name.text = Server._player_data[name.to_int()][PlayerData.Field.NAME]
@@ -30,25 +45,45 @@ func _process(delta):
 	pass
 
 func _physics_process(delta):
+	is_animation_state_set_this_frame = false
+	if is_on_wall_only():
+		velocity.y = lerpf(velocity.y, 0, delta * FRICTION)
+		_set_animation_state(Globals.ANIMATION_STATE.WALLGRAB)
+
 	if not is_on_floor():
 		velocity.y += gravity * delta
 		if velocity.y > 0:
-			pass
-			# TODO: Play fall animation
-
+			_set_animation_state(Globals.ANIMATION_STATE.FALL)
 	if input.lr_movement != 0:
 		velocity.x = lerpf(velocity.x, input.lr_movement * SPEED, delta)
-		# TODO: Play walk animation
+		_set_animation_state(Globals.ANIMATION_STATE.WALK)
 	elif is_on_floor():
 		velocity.x = lerpf(velocity.x, 0, delta * FRICTION)
-		# TODO: Play stand animation
+		_set_animation_state(Globals.ANIMATION_STATE.STAND)
 	
 	if input.is_jumping and is_on_floor():
 		velocity.y = -JUMP_HEIGHT
-		#TODO: Play jump animation
+		_set_animation_state(Globals.ANIMATION_STATE.JUMP)
+	
+	if input.is_jumping and is_on_wall():
+		velocity.y = -(JUMP_HEIGHT * WALLJUMP_FACTOR)
+		velocity.x = get_wall_normal().x * WALLJUMP_PUSH
+		_set_animation_state(Globals.ANIMATION_STATE.JUMP)
 	input.is_jumping = false
 	
 	move_and_slide()
+
+func _set_animation_state(animation_state, force=false):
+	if is_animation_state_set_this_frame and not force:
+		return
+	# TODO
+	match animation_state:
+		Globals.ANIMATION_STATE.NONE:
+			push_error(\"Animation state NONE provided\")
+		_:
+			pass
+			#push_error(\"Unrecognised animation state\")
+	is_animation_state_set_this_frame = true
 "
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_3fibl"]

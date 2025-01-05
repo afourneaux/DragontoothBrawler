@@ -17,19 +17,22 @@ func _ready():
 	for spawner in range($Level/Spawners.get_child_count()):
 		spawner_timers.append(0)
 	# TODO: Create UI guff
-	request_spawn.rpc_id(1)
+	request_spawn_player.rpc_id(1)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	for spawner in range(len(spawner_timers)):
-		spawner_timers[spawner] -= delta
 	if multiplayer.is_server():
+		for spawner in range(len(spawner_timers)):
+			spawner_timers[spawner] -= delta
 		for player in spawn_queue:
-			spawn(player)
+			spawn_player(player)
 		spawn_queue.clear()
 
+# SERVER ONLY
 func get_spawner():
+	if not multiplayer.is_server():
+		push_error(\"get_spawner called from client\")
 	var index
 	var valid_indices = []
 	for spawner in range(len(spawner_timers)):
@@ -43,7 +46,9 @@ func get_spawner():
 	spawner_timers[index] = SPAWNER_REFRESH_TIME
 	return index
 
-func spawn(player_id):
+func spawn_player(player_id):
+	if not multiplayer.is_server():
+		push_error(\"spawn_player called from client\")
 	var spawner = get_spawner()
 	var character = load(\"res://Prefabs/Player.tscn\").instantiate()
 	character.name = str(player_id)
@@ -51,8 +56,11 @@ func spawn(player_id):
 	character.player_id = player_id
 	$Players.add_child(character, true)
 
+# RPCs
 @rpc(\"any_peer\", \"reliable\", \"call_local\")
-func request_spawn():
+func request_spawn_player():
+	if not multiplayer.is_server():
+		push_error(\"request_spawn_player called from client\")
 	spawn_queue.append(multiplayer.get_remote_sender_id())
 "
 
@@ -81,38 +89,65 @@ position = Vector2(636, 344)
 [node name="4" type="Node2D" parent="Level/Spawners"]
 position = Vector2(1007, 358)
 
-[node name="StaticBody2D" type="StaticBody2D" parent="Level"]
+[node name="5" type="Node2D" parent="Level/Spawners"]
+position = Vector2(327, 497)
+
+[node name="6" type="Node2D" parent="Level/Spawners"]
+position = Vector2(824, 353)
+
+[node name="7" type="Node2D" parent="Level/Spawners"]
+position = Vector2(322, 239)
+
+[node name="LevelBlocks" type="Node2D" parent="Level"]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Level/LevelBlocks"]
 position = Vector2(324, 568)
 scale = Vector2(34.36, 2.52)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D"]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D"]
 texture = ExtResource("1_2f75f")
 
-[node name="StaticBody2D2" type="StaticBody2D" parent="Level"]
+[node name="StaticBody2D2" type="StaticBody2D" parent="Level/LevelBlocks"]
 position = Vector2(800, 414)
 scale = Vector2(34.36, 2.52)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D2"]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D2"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D2"]
 texture = ExtResource("1_2f75f")
 
-[node name="StaticBody2D3" type="StaticBody2D" parent="Level"]
+[node name="StaticBody2D3" type="StaticBody2D" parent="Level/LevelBlocks"]
 position = Vector2(85, 302)
 scale = Vector2(3.74842, 19.5922)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/StaticBody2D3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D3"]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/StaticBody2D3"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D3"]
 texture = ExtResource("1_2f75f")
+
+[node name="StaticBody2D4" type="StaticBody2D" parent="Level/LevelBlocks"]
+position = Vector2(320, 318)
+scale = Vector2(11.36, 2.52)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D4"]
+position = Vector2(0, -2.38419e-07)
+shape = SubResource("RectangleShape2D_2gbds")
+
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D4"]
+texture = ExtResource("1_2f75f")
+
+[node name="HitBoxes" type="Node2D" parent="Level"]
+
+[node name="DeathHeight" type="Node2D" parent="Level"]
+position = Vector2(0, 650)
 
 [node name="Effects" type="Node2D" parent="."]
 

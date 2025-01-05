@@ -8,7 +8,7 @@ script/source = "extends Control
 
 signal _on_join
 
-const DEFAULT_PORT = 7000
+const DEFAULT_PORT = 28596
 const TIMEOUT_OVERRIDE = 5
 
 var _current_timeout_count = 0
@@ -55,7 +55,10 @@ func _on_host_button_pressed():
 	Audio.play_sfx(\"UISelect\")
 	isMenuDisabled = true
 	
-	peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
+	var result = peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
+	if result != Error.OK:
+		$Inputs/WarningText.text = \"Failed to create session\"
+		return
 	multiplayer.multiplayer_peer = peer
 	_on_join.emit(player_name)
 

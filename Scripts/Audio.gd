@@ -8,6 +8,7 @@ var muted = false
 
 func _enter_tree():
 	bg_node = AudioStreamPlayer.new()
+	bg_node.name = "BGMusicPlayer"
 	add_child(bg_node)
 
 func _process(delta):
