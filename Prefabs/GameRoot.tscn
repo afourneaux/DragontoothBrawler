@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://b3lmfcik1cwwm"]
+[gd_scene load_steps=5 format=3 uid="uid://b3lmfcik1cwwm"]
 
 [ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_2f75f"]
 
@@ -78,7 +78,7 @@ func check_player_out_of_bounds():
 	if not multiplayer.is_server():
 		push_error(\"check_player_out_of_bounds called from client\")
 	for player in $Players.get_children():
-		if player.position.y > $Level/DeathHeight.position.y:
+		if player.position.y > $Level/LevelBounds.position.y:
 			player.die()
 
 func enqueue_player_spawn(player_id, on_delay=true):
@@ -91,6 +91,71 @@ func enqueue_player_spawn(player_id, on_delay=true):
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]
 size = Vector2(16, 16)
+
+[sub_resource type="GDScript" id="GDScript_d1d7t"]
+resource_name = "Camera"
+script/source = "extends Camera2D
+
+const LEVEL_VIEW_BUFFER = 200
+const SPEED = 2
+const VIEW_DISTANCE = 3  # Lower is farther
+const BASE_ZOOM_LEVEL = 1.5
+var to_position: Vector2
+var to_zoom: Vector2
+const RESTING_ZOOM = Vector2(1, 1)
+var level_size: Vector2
+var resting_position: Vector2
+var my_player: CharacterBody2D
+var players_node: Node
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	level_size = $\"../Level/LevelBounds\".position
+	resting_position = level_size / 2
+	players_node = get_parent().get_node(\"Players\")
+	to_position = resting_position
+	position = resting_position
+	to_zoom = RESTING_ZOOM
+	zoom = RESTING_ZOOM
+	limit_top = -LEVEL_VIEW_BUFFER
+	limit_left = -LEVEL_VIEW_BUFFER
+	limit_right = level_size.x + LEVEL_VIEW_BUFFER
+	limit_bottom = level_size.y + LEVEL_VIEW_BUFFER
+	
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	set_to_position()
+	position.x = lerpf(position.x, to_position.x, delta * SPEED)
+	position.y = lerpf(position.y, to_position.y, delta * SPEED)
+	zoom.x = lerpf(zoom.x, to_zoom.x, delta * SPEED)
+	zoom.y = lerpf(zoom.y, to_zoom.y, delta * SPEED)
+
+func set_to_position():
+	# GET DATA
+	var player_id = multiplayer.get_unique_id()
+	my_player = players_node.get_node_or_null(str(player_id))
+	var mouse_position = get_global_mouse_position()
+	var subject_position: Vector2
+	
+	# POSITION
+	if my_player == null:
+		subject_position = resting_position
+	else:
+		subject_position = my_player.position
+	var subject_to_mouse = subject_position - mouse_position
+	to_position = subject_position - (subject_to_mouse / VIEW_DISTANCE)
+	
+	# ZOOM
+	var screen_size = get_viewport_rect().size
+	var base_zoom = screen_size / level_size
+	var zoom_factor_x = abs(subject_to_mouse.x) / resting_position.x
+	var zoom_factor_y = abs(subject_to_mouse.y) / resting_position.y
+	var zoom_factor = BASE_ZOOM_LEVEL - clamp((zoom_factor_x + zoom_factor_y) / 10, 0, 0.2)
+	to_zoom = base_zoom * Vector2(zoom_factor, zoom_factor)
+"
 
 [node name="GameRoot" type="Node"]
 script = SubResource("GDScript_yc5rg")
@@ -171,8 +236,8 @@ texture = ExtResource("1_2f75f")
 
 [node name="HitBoxes" type="Node2D" parent="Level"]
 
-[node name="DeathHeight" type="Node2D" parent="Level"]
-position = Vector2(0, 650)
+[node name="LevelBounds" type="Node2D" parent="Level"]
+position = Vector2(1150, 650)
 
 [node name="Effects" type="Node2D" parent="."]
 
@@ -189,3 +254,8 @@ grow_vertical = 2
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://Prefabs/Player.tscn")
 spawn_path = NodePath("../Players")
+
+[node name="Camera" type="Camera2D" parent="."]
+limit_left = 0
+limit_top = 0
+script = SubResource("GDScript_d1d7t")

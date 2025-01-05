@@ -10,9 +10,11 @@ config_version=5
 
 [application]
 
-config/name="Brawler"
+config/name="DragontoothBrawler"
 run/main_scene="res://Prefabs/Menus/MenuRoot.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
+boot_splash/bg_color=Color(0.141176, 0.141176, 0.141176, 1)
+boot_splash/image="res://Assets/Sprites/Spiral_Staircase_logo.png"
 config/icon="res://icon.svg"
 
 [autoload]
