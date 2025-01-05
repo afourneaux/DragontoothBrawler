@@ -8,26 +8,27 @@ script/source = "extends Node
 
 var spawner_timers = []
 const SPAWNER_REFRESH_TIME = 10
-var spawn_queue = []
+var player_spawn_queue = {}
+const PLAYER_SPAWN_DELAY = 3
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var music = load(\"res://Assets/Audio/battle_theme.wav\")
 	Audio.play_bg_music(music)
-	for spawner in range($Level/Spawners.get_child_count()):
-		spawner_timers.append(0)
 	# TODO: Create UI guff
-	request_spawn_player.rpc_id(1)
+	if multiplayer.is_server():
+		for spawner in range($Level/Spawners.get_child_count()):
+			spawner_timers.append(0)
+		for player_id in Server._player_data:
+			enqueue_player_spawn(player_id, false)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if multiplayer.is_server():
-		for spawner in range(len(spawner_timers)):
-			spawner_timers[spawner] -= delta
-		for player in spawn_queue:
-			spawn_player(player)
-		spawn_queue.clear()
+		advance_spawn_timers(delta)
+		spawn_enqueued_players(delta)
+		check_player_out_of_bounds()
 
 # SERVER ONLY
 func get_spawner():
@@ -35,6 +36,7 @@ func get_spawner():
 		push_error(\"get_spawner called from client\")
 	var index
 	var valid_indices = []
+	# Get a random spawner among those off cooldown
 	for spawner in range(len(spawner_timers)):
 		if spawner_timers[spawner] <= 0:
 			valid_indices.append(spawner)
@@ -46,6 +48,21 @@ func get_spawner():
 	spawner_timers[index] = SPAWNER_REFRESH_TIME
 	return index
 
+func advance_spawn_timers(delta):
+	for spawner in range(len(spawner_timers)):
+		spawner_timers[spawner] -= delta
+
+func spawn_enqueued_players(delta):
+	var players_to_clear = []
+	for player_id in player_spawn_queue:
+		if player_spawn_queue[player_id] >= PLAYER_SPAWN_DELAY:
+			spawn_player(player_id)
+			players_to_clear.append(player_id)
+		else:
+			player_spawn_queue[player_id] += delta
+	for player_id in players_to_clear:
+		player_spawn_queue.erase(player_id)
+
 func spawn_player(player_id):
 	if not multiplayer.is_server():
 		push_error(\"spawn_player called from client\")
@@ -54,14 +71,22 @@ func spawn_player(player_id):
 	character.name = str(player_id)
 	character.position = $Level/Spawners.get_child(spawner).position
 	character.player_id = player_id
+	character.on_death.connect(enqueue_player_spawn)
 	$Players.add_child(character, true)
 
-# RPCs
-@rpc(\"any_peer\", \"reliable\", \"call_local\")
-func request_spawn_player():
+func check_player_out_of_bounds():
 	if not multiplayer.is_server():
-		push_error(\"request_spawn_player called from client\")
-	spawn_queue.append(multiplayer.get_remote_sender_id())
+		push_error(\"check_player_out_of_bounds called from client\")
+	for player in $Players.get_children():
+		if player.position.y > $Level/DeathHeight.position.y:
+			player.die()
+
+func enqueue_player_spawn(player_id, on_delay=true):
+	if not multiplayer.is_server():
+		push_error(\"enqueue_player_spawn called from client\")
+	if player_spawn_queue.has(player_id):
+		push_error(\"enqueue_player_spawn called, but player is already in queue\")
+	player_spawn_queue[player_id] = 0 if on_delay else PLAYER_SPAWN_DELAY
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]

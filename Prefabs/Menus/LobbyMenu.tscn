@@ -57,7 +57,7 @@ func _on_host_button_pressed():
 	
 	var result = peer.create_server(DEFAULT_PORT, Globals.MAX_PLAYERS)
 	if result != Error.OK:
-		$Inputs/WarningText.text = \"Failed to create session\"
+		_on_connection_failed(\"Failed to create session\\nThere is probably already a game open on your network\")
 		return
 	multiplayer.multiplayer_peer = peer
 	_on_join.emit(player_name)
@@ -86,9 +86,9 @@ func _on_join_button_pressed():
 		return
 	multiplayer.multiplayer_peer = peer
 
-func _on_connection_failed():
+func _on_connection_failed(message=\"Connection failed\"):
 	isMenuDisabled = false
-	$Inputs/WarningText.text = \"Connection failed\"
+	$Inputs/WarningText.text = message
 	peer.close()
 	multiplayer.multiplayer_peer = null
 

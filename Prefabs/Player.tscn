@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://cvftqky6unyrj"]
+[gd_scene load_steps=11 format=3 uid="uid://cvftqky6unyrj"]
 
 [ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_tgh88"]
 [ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_nb5ko"]
+[ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="3_qmhue"]
 
 [sub_resource type="GDScript" id="GDScript_7glg2"]
 resource_name = "Player"
@@ -13,7 +14,6 @@ signal on_death
 # Data sheet? Child classes?
 # TODO: Split animation into another file with signals
 # TODO: Split physics into another file with signals
-# TODO: Split status e.g. health into another file
 const SPEED = 400
 const FRICTION = 5
 const JUMP_HEIGHT = 800
@@ -21,6 +21,8 @@ const FLOATY_FACTOR = 3  # Low for floaty. Adjust JUMP_HEIGHT to balance
 
 const WALLJUMP_FACTOR = 0.8
 const WALLJUMP_PUSH = 50
+
+const MAX_HEALTH = 100
 
 var gravity = ProjectSettings.get_setting(\"physics/2d/default_gravity\") * FLOATY_FACTOR
 var is_animation_state_set_this_frame = false
@@ -34,10 +36,19 @@ var player_id = 1:
 
 
 func die():
-	on_death.emit()
+	on_death.emit(player_id)
+	self.queue_free()
+
+func _check_health(health):
+	if health <= 0:
+		die()
 
 func _ready():
 	$Name.text = Server._player_data[name.to_int()][PlayerData.Field.NAME]
+	$Status.on_health_changed.connect(_check_health)
+	$Status.on_health_changed.connect($Health.show_health)
+	$Status.max_health = MAX_HEALTH
+	$Status.health = MAX_HEALTH
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -140,6 +151,56 @@ func jump():
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
 size = Vector2(16, 16)
 
+[sub_resource type="GDScript" id="GDScript_uv86y"]
+resource_name = "PlayerStatus"
+script/source = "extends Node
+
+signal on_health_changed
+
+var max_health: int
+
+var health: int:
+	set(value):
+		health = value
+		if health > max_health:
+			health = max_health
+		on_health_changed.emit(health)
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
+
+[sub_resource type="GDScript" id="GDScript_2ebey"]
+resource_name = "HealthBar"
+script/source = "extends TextureProgressBar
+
+const MAX_VISIBILITY = 0.9
+const VISIBILITY_CHANGE_SPEED = 1
+const VISIBILITY_CHANGE_DELAY = 3
+var visibility_change_timer = 0
+var current_visibility = 0
+
+func show_health(new_value):
+	value = new_value
+	current_visibility = MAX_VISIBILITY
+	visibility_change_timer = 0
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if current_visibility > 0:
+		visibility_change_timer += delta
+		if visibility_change_timer >= VISIBILITY_CHANGE_DELAY:
+			current_visibility = max(
+				current_visibility - (delta * VISIBILITY_CHANGE_SPEED), 0)
+	modulate.a = current_visibility
+"
+
 [node name="Player" type="CharacterBody2D"]
 script = SubResource("GDScript_7glg2")
 
@@ -175,3 +236,27 @@ sprite_frames = ExtResource("1_tgh88")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(1, 2)
 shape = SubResource("RectangleShape2D_s81vj")
+
+[node name="Status" type="Node" parent="."]
+script = SubResource("GDScript_uv86y")
+
+[node name="Health" type="TextureProgressBar" parent="."]
+modulate = Color(1, 1, 1, 0.588235)
+custom_minimum_size = Vector2(75, 10)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -37.5
+offset_top = -27.5
+offset_right = 37.5
+offset_bottom = -17.5
+grow_horizontal = 2
+grow_vertical = 0
+nine_patch_stretch = true
+texture_under = ExtResource("3_qmhue")
+texture_progress = ExtResource("3_qmhue")
+tint_under = Color(1, 0, 0, 1)
+tint_progress = Color(0, 0.419608, 0, 1)
+script = SubResource("GDScript_2ebey")
