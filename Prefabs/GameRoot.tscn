@@ -13,6 +13,7 @@ const PLAYER_SPAWN_DELAY = 3
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	Server.on_data_changed.connect(back_to_menu)
 	var music = load(\"res://Assets/Audio/battle_theme.wav\")
 	Audio.play_bg_music(music)
 	# TODO: Create UI guff
@@ -22,6 +23,13 @@ func _ready():
 		for player_id in Server._player_data:
 			enqueue_player_spawn(player_id, false)
 
+func back_to_menu():
+	Server.on_data_changed.disconnect(back_to_menu)
+	var scene = load(\"res://Prefabs/Menus/MenuRoot.tscn\").instantiate()
+	Server.disconnect_peer()
+	PlayerData.reset()
+	get_tree().root.add_child(scene)
+	queue_free()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

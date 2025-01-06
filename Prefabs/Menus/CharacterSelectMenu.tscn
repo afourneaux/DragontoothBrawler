@@ -12,13 +12,22 @@ signal on_start_game
 var _character_package = preload(\"res://Prefabs/Menus/UI/character.tscn\")
 var _player_package = preload(\"res://Prefabs/Menus/UI/player.tscn\")
 
+var bg_music = preload(\"res://Assets/Audio/Menus/CharacterSelectMenu.wav\")
+
 var character_panels = {}
 var is_game_starting = false
 var TIME_TO_START = 5
 var start_timer = 0
 
+const RED = Color(1, 0.1, 0.1, 1)
+const GREEN = Color(0.1, 1, 0.1, 1)
+
 func _ready():
-	$Button.text = \"Ready\"
+	if bg_music != null:
+		Audio.play_bg_music(bg_music)
+	$Button_Ready.text = \"Ready\"
+	$Button_Ready.modulate = RED
+	$Button_Clear.text = \"Clear Character\"
 	Server.on_data_changed.connect(_update_player_data)
 	for character in Globals.CHARACTER_NAMES.keys():
 		var character_instance = _character_package.instantiate()
@@ -49,17 +58,17 @@ func _update_player_data():
 		player_instance.get_node(\"Label\").text = player_data[player][PlayerData.Field.NAME]
 		player_instance.get_node(\"SelectedCharacter\").texture = get_character_portrait(player_data[player][PlayerData.Field.CHARACTER])
 		if player_data[player][PlayerData.Field.READY]:
-			player_instance.modulate = Color(0.1, 1, 0.1, 1)
+			player_instance.modulate = GREEN
 		else:
-			player_instance.modulate = Color(1, 0.1, 0.1, 1)
+			player_instance.modulate = RED
 			all_ready = false
 		if player_data[player][PlayerData.Field.CHARACTER] != Globals.Character.NONE:
 			character_panels[player_data[player][PlayerData.Field.CHARACTER]].is_selected = true
-			if all_ready and !is_game_starting:
-				start_countdown.rpc()
-			elif !all_ready and is_game_starting:
-				stop_countdown.rpc()
 		$PlayerList.add_child(player_instance)
+	if all_ready and !is_game_starting:
+		start_countdown.rpc()
+	elif !all_ready and is_game_starting:
+		stop_countdown.rpc()
 
 func _on_character_pressed(character):
 	if !PlayerData.is_ready:
@@ -67,16 +76,22 @@ func _on_character_pressed(character):
 		Audio.play_bg_music(load(\"res://Assets/Audio/Characters/%s.wav\" % Globals.CHARACTER_NAMES[character]))
 		Audio.play_sfx(\"UISelect\")
 
+func _on_button_clear_pressed():
+	PlayerData.selected_character = Globals.Character.NONE
+	if bg_music != null:
+		Audio.play_bg_music(bg_music)
+	_on_button_toggled(false)
+
 func _on_button_toggled(toggled_on):
-	if !PlayerData.is_ready and PlayerData.selected_character == Globals.Character.NONE:
+	if !toggled_on or PlayerData.selected_character == Globals.Character.NONE:
 		Audio.play_sfx(\"UICancel\")
-		$Button.button_pressed = false
-		return
-	PlayerData.is_ready = toggled_on
-	if toggled_on:
-		Audio.play_sfx(\"UISelect\")
+		PlayerData.is_ready = false
+		$Button_Ready.button_pressed = false
+		$Button_Ready.modulate = RED
 	else:
-		Audio.play_sfx(\"UICancel\")
+		PlayerData.is_ready = true
+		Audio.play_sfx(\"UISelect\")
+		$Button_Ready.modulate = GREEN
 
 func get_character_portrait(character):
 	var portrait_package = null
@@ -144,7 +159,7 @@ grow_horizontal = 0
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Button" type="Button" parent="."]
+[node name="Button_Ready" type="Button" parent="."]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 1
 anchors_preset = 3
@@ -152,15 +167,33 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -250.0
-offset_top = -100.0
-offset_right = -50.0
-offset_bottom = -50.0
+offset_left = -252.0
+offset_top = -98.0
+offset_right = -52.0
+offset_bottom = -48.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("1_2rumt")
 toggle_mode = true
 text = "TEXT_READY"
+
+[node name="Button_Clear" type="Button" parent="."]
+custom_minimum_size = Vector2(200, 25)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -252.0
+offset_top = -148.0
+offset_right = -52.0
+offset_bottom = -121.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("1_2rumt")
+toggle_mode = true
+text = "TEXT_CLEAR"
 
 [node name="Countdown" type="Label" parent="."]
 visible = false
@@ -186,4 +219,5 @@ text = "X"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[connection signal="toggled" from="Button" to="." method="_on_button_toggled"]
+[connection signal="toggled" from="Button_Ready" to="." method="_on_button_toggled"]
+[connection signal="pressed" from="Button_Clear" to="." method="_on_button_clear_pressed"]

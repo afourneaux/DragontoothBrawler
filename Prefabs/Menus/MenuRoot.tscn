@@ -10,6 +10,7 @@ script/source = "extends Control
 
 func _ready():
 	$GameTitle.text = \"Dragontooth Brawl\"
+	$Mute.button_pressed = Audio.muted
 	_init_main_menu()
 
 func _clear_old_menu():
@@ -21,9 +22,6 @@ func _init_main_menu():
 	var scene = load(\"res://Prefabs/Menus/MainMenu.tscn\").instantiate()
 	scene._on_advance.connect(_init_lobby_menu)
 	$ActiveMenu.add_child(scene)
-	var music = load(\"res://Assets/Audio/Menus/MainMenu.wav\") # TODO Enable for menu music
-	if music != null:
-		Audio.play_bg_music(music)
 
 func _init_lobby_menu():
 	_clear_old_menu()
@@ -40,9 +38,6 @@ func _init_character_select_menu():
 	var scene = load(\"res://Prefabs/Menus/CharacterSelectMenu.tscn\").instantiate()
 	scene.on_start_game.connect(start_game)
 	$ActiveMenu.add_child(scene)
-	var music = load(\"res://Assets/Audio/Menus/CharacterSelectMenu.wav\")
-	if music != null:
-		Audio.play_bg_music(music)
 
 func start_game():
 	var game_scene = load(\"res://Prefabs/GameRoot.tscn\").instantiate()
