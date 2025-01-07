@@ -1,19 +1,18 @@
 [gd_scene load_steps=11 format=3 uid="uid://cvftqky6unyrj"]
 
-[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_tgh88"]
-[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_nb5ko"]
-[ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="3_qmhue"]
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_q0ffi"]
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="2_mk6fi"]
+[ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="3_4s7cu"]
 
 [sub_resource type="GDScript" id="GDScript_7glg2"]
 resource_name = "Player"
 script/source = "extends CharacterBody2D
 
 signal on_death
+signal on_animation_state_change
 
 # TODO: values configurable by character
 # Data sheet? Child classes?
-# TODO: Split animation into another file with signals
-# TODO: Split physics into another file with signals
 const SPEED = 400
 const FRICTION = 5
 const JUMP_HEIGHT = 800
@@ -26,6 +25,8 @@ const MAX_HEALTH = 100
 
 var gravity = ProjectSettings.get_setting(\"physics/2d/default_gravity\") * FLOATY_FACTOR
 var is_animation_state_set_this_frame = false
+var is_attack_down = false
+var is_special_down = false
 
 var player_id = 1:
 	set (value):
@@ -33,7 +34,6 @@ var player_id = 1:
 		$PlayerInput.set_multiplayer_authority(value)
 
 @onready var input = $PlayerInput
-
 
 func die():
 	on_death.emit(player_id)
@@ -49,11 +49,32 @@ func _ready():
 	$Status.on_health_changed.connect($Health.show_health)
 	$Status.max_health = MAX_HEALTH
 	$Status.health = MAX_HEALTH
+	set_process(multiplayer.is_server())
+	set_physics_process(multiplayer.is_server())
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	if input.is_attack_held:
+		if is_attack_down:
+			attack_held(delta)
+		else:
+			attack_down()
+	else:
+		if is_attack_down:
+			attack_up()
+
+	if input.is_special_held:
+		if is_special_down:
+			special_held(delta)
+		else:
+			special_down()
+	else:
+		if is_special_down:
+			special_up()
+
+	is_attack_down = input.is_attack_held
+	is_special_down = input.is_special_held
 
 func _physics_process(delta):
 	is_animation_state_set_this_frame = false
@@ -87,14 +108,31 @@ func _physics_process(delta):
 func _set_animation_state(animation_state, force=false):
 	if is_animation_state_set_this_frame and not force:
 		return
-	# TODO
-	match animation_state:
-		Globals.ANIMATION_STATE.NONE:
-			push_error(\"Animation state NONE provided\")
-		_:
-			pass
-			#push_error(\"Unrecognised animation state\")
+	on_animation_state_change.emit(animation_state)
+#	match animation_state:
+#		Globals.ANIMATION_STATE.NONE:
+#			push_error(\"Animation state NONE provided\")
+#		_:
+#			push_error(\"Unrecognised animation state\")
 	is_animation_state_set_this_frame = true
+
+func attack_down():
+	pass
+
+func attack_held(delta):
+	pass
+
+func attack_up():
+	pass
+
+func special_down():
+	pass
+
+func special_held(delta):
+	pass
+
+func special_up():
+	pass
 "
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_3fibl"]
@@ -129,6 +167,11 @@ script/source = "extends MultiplayerSynchronizer
 
 @export var lr_movement = 0
 var is_jumping = false
+var is_attack_held = false
+var is_special_held = false
+
+var is_mouse_down_left = false
+var is_mouse_down_right = false
 
 func _ready():
 	set_process(is_multiplayer_authority())
@@ -141,11 +184,32 @@ func _process(delta):
 	if Input.is_action_pressed(\"move_right\"):
 		lr_movement += 1
 	if Input.is_action_just_pressed(\"jump\"):
-		jump.rpc()
+		jump.rpc_id(1)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == false:
+		attack.rpc_id(1, true)
+		is_mouse_down_left = true
+	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == true:
+		attack.rpc_id(1, false)
+		is_mouse_down_left = false
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == false:
+		special.rpc_id(1, true)
+		is_mouse_down_right = true
+	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == true:
+		special.rpc_id(1, false)
+		is_mouse_down_right = false
+	
 
 @rpc(\"call_local\")
 func jump():
 	is_jumping = true
+
+@rpc(\"call_local\")
+func attack(is_held: bool):
+	is_attack_held = is_held
+
+@rpc(\"call_local\")
+func special(is_held: bool):
+	is_special_held = is_held
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
@@ -224,14 +288,14 @@ offset_right = 36.5
 offset_bottom = -27.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("2_nb5ko")
+theme_override_fonts/font = ExtResource("1_q0ffi")
 text = "TEXT_NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(1, 2)
-sprite_frames = ExtResource("1_tgh88")
+sprite_frames = ExtResource("2_mk6fi")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(1, 2)
@@ -255,8 +319,8 @@ offset_bottom = -17.5
 grow_horizontal = 2
 grow_vertical = 0
 nine_patch_stretch = true
-texture_under = ExtResource("3_qmhue")
-texture_progress = ExtResource("3_qmhue")
+texture_under = ExtResource("3_4s7cu")
+texture_progress = ExtResource("3_4s7cu")
 tint_under = Color(1, 0, 0, 1)
 tint_progress = Color(0, 0.419608, 0, 1)
 script = SubResource("GDScript_2ebey")
