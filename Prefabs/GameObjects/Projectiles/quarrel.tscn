@@ -1,10 +1,33 @@
-[gd_scene load_steps=2 format=3 uid="uid://bh63axkor25rs"]
+[gd_scene load_steps=4 format=3 uid="uid://bh63axkor25rs"]
+
+[ext_resource type="Texture2D" uid="uid://brw73seiks7s8" path="res://Assets/Sprites/Projectiles/quarrel.png" id="1_wrccb"]
+
+[sub_resource type="GDScript" id="GDScript_tw73y"]
+script/source = "extends Projectile
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_840dc"]
+size = Vector2(11, 5)
 
 [node name="Quarrel" type="Node2D"]
+script = SubResource("GDScript_tw73y")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(4.5, -0.5)
 shape = SubResource("RectangleShape2D_840dc")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("1_wrccb")

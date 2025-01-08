@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bh8uj1angqxep"]
+
+[sub_resource type="GDScript" id="GDScript_lf16d"]
+resource_name = "CharacterID"
+script/source = "extends Node
+
+@export var value: CharacterStats.Character
+"
+
+[node name="CharacterID" type="Node"]
+script = SubResource("GDScript_lf16d")

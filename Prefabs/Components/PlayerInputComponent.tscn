@@ -1,0 +1,70 @@
+[gd_scene load_steps=3 format=3 uid="uid://b0hfhk0ny8nep"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nygse"]
+properties/0/path = NodePath(".:lr_movement")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:mouse_position")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[sub_resource type="GDScript" id="GDScript_13shx"]
+resource_name = "PlayerInput"
+script/source = "extends MultiplayerSynchronizer
+
+
+var lr_movement = 0
+var is_jumping = false
+var is_attack_held = false
+var is_special_held = false
+
+var mouse_position = Vector2(0,0)
+var is_mouse_down_left = false
+var is_mouse_down_right = false
+
+func _ready():
+	set_process(is_multiplayer_authority())
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	mouse_position = $MouseTracker.get_global_mouse_position()
+	lr_movement = 0
+	if Input.is_action_pressed(\"move_left\"):
+		lr_movement -= 1
+	if Input.is_action_pressed(\"move_right\"):
+		lr_movement += 1
+	if Input.is_action_just_pressed(\"jump\"):
+		jump.rpc_id(1)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == false:
+		attack.rpc_id(1, true)
+		is_mouse_down_left = true
+	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == true:
+		attack.rpc_id(1, false)
+		is_mouse_down_left = false
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == false:
+		special.rpc_id(1, true)
+		is_mouse_down_right = true
+	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == true:
+		special.rpc_id(1, false)
+		is_mouse_down_right = false
+	
+
+@rpc(\"call_local\")
+func jump():
+	is_jumping = true
+
+@rpc(\"call_local\")
+func attack(is_held: bool):
+	is_attack_held = is_held
+
+@rpc(\"call_local\")
+func special(is_held: bool):
+	is_special_held = is_held
+"
+
+[node name="PlayerInput" type="MultiplayerSynchronizer"]
+root_path = NodePath(".")
+replication_config = SubResource("SceneReplicationConfig_nygse")
+script = SubResource("GDScript_13shx")
+
+[node name="MouseTracker" type="Node2D" parent="."]

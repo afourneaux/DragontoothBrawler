@@ -13,7 +13,7 @@ var player_name:
 			on_update_player_data.emit(package_data())
 	get:
 		return _player_name
-var _selected_character = Globals.Character.NONE
+var _selected_character = CharacterStats.Character.NONE
 var selected_character:
 	set(value):
 		if value != _selected_character:
@@ -41,5 +41,5 @@ func package_data():
 
 func reset():
 	_player_name = ""
-	_selected_character = Globals.Character.NONE
+	_selected_character = CharacterStats.Character.NONE
 	_is_ready = false

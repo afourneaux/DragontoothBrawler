@@ -9,7 +9,7 @@ script/source = "extends Panel
 
 signal _on_pressed
 
-var character = Globals.Character.NONE
+var character = CharacterStats.Character.NONE
 var mouseOver = false
 var is_selected = false
 

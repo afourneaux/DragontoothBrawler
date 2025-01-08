@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://crfuirdfdicw1"]
+
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_iqt6s"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D"]
+scale = Vector2(1, 2)
+sprite_frames = ExtResource("1_iqt6s")

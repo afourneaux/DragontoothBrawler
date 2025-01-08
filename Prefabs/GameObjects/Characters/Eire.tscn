@@ -1,0 +1,206 @@
+[gd_scene load_steps=12 format=3 uid="uid://b50v2k81sqp2d"]
+
+[ext_resource type="PackedScene" uid="uid://b0hfhk0ny8nep" path="res://Prefabs/Components/PlayerInputComponent.tscn" id="1_gs010"]
+[ext_resource type="PackedScene" uid="uid://dogjjojbtqi3f" path="res://Prefabs/Components/NameTagComponent.tscn" id="2_1se7w"]
+[ext_resource type="PackedScene" uid="uid://crfuirdfdicw1" path="res://Prefabs/Components/CharacterAnimatorComponent.tscn" id="3_4marn"]
+[ext_resource type="PackedScene" uid="uid://fegiokc44mma" path="res://Prefabs/Components/HealthComponent.tscn" id="4_w0m01"]
+[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="5_6jc2y"]
+[ext_resource type="PackedScene" uid="uid://bh8uj1angqxep" path="res://Prefabs/Components/CharacterIDComponent.tscn" id="6_imbxe"]
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="7_mwgif"]
+
+[sub_resource type="GDScript" id="GDScript_7glg2"]
+resource_name = "Player"
+script/source = "extends CharacterBody2D
+
+signal on_death
+signal on_animation_state_change
+
+@export var input: Node
+
+# TODO: values configurable by character in a data sheet
+const SPEED = 400
+const FRICTION = 5
+const JUMP_HEIGHT = 800
+const FLOATY_FACTOR = 3  # Low for floaty. Adjust JUMP_HEIGHT to balance
+
+const WALLJUMP_FACTOR = 0.8
+const WALLJUMP_PUSH = 50
+
+var gravity = ProjectSettings.get_setting(\"physics/2d/default_gravity\") * FLOATY_FACTOR
+var is_animation_state_set_this_frame = false
+var is_attack_down = false
+var is_special_down = false
+
+var player_id = 1:
+	set (value):
+		player_id = value
+		input.set_multiplayer_authority(value)
+
+func die():
+	on_death.emit(player_id)
+	self.queue_free()
+
+func _check_health(health):
+	if health <= 0:
+		die()
+
+func _ready():
+	$Name.text = Server._player_data[name.to_int()][PlayerData.Field.NAME]
+	$Health.on_health_changed.connect(_check_health)
+	set_process(multiplayer.is_server())
+	set_physics_process(multiplayer.is_server())
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if input.is_attack_held:
+		if is_attack_down:
+			attack_held(delta)
+		else:
+			attack_down()
+	else:
+		if is_attack_down:
+			attack_up()
+
+	if input.is_special_held:
+		if is_special_down:
+			special_held(delta)
+		else:
+			special_down()
+	else:
+		if is_special_down:
+			special_up()
+
+	is_attack_down = input.is_attack_held
+	is_special_down = input.is_special_held
+
+func _physics_process(delta):
+	is_animation_state_set_this_frame = false
+	if is_on_wall_only():
+		velocity.y = lerpf(velocity.y, 0, delta * FRICTION)
+		_set_animation_state(Globals.ANIMATION_STATE.WALLGRAB)
+
+	if not is_on_floor():
+		velocity.y += gravity * delta
+		if velocity.y > 0:
+			_set_animation_state(Globals.ANIMATION_STATE.FALL)
+	if input.lr_movement != 0:
+		velocity.x = lerpf(velocity.x, input.lr_movement * SPEED, delta)
+		_set_animation_state(Globals.ANIMATION_STATE.WALK)
+	elif is_on_floor():
+		velocity.x = lerpf(velocity.x, 0, delta * FRICTION)
+		_set_animation_state(Globals.ANIMATION_STATE.STAND)
+	
+	if input.is_jumping and is_on_floor():
+		velocity.y = -JUMP_HEIGHT
+		_set_animation_state(Globals.ANIMATION_STATE.JUMP)
+	
+	if input.is_jumping and is_on_wall():
+		velocity.y = -(JUMP_HEIGHT * WALLJUMP_FACTOR)
+		velocity.x = get_wall_normal().x * WALLJUMP_PUSH
+		_set_animation_state(Globals.ANIMATION_STATE.JUMP)
+	input.is_jumping = false
+	
+	move_and_slide()
+
+func _set_animation_state(animation_state, force=false):
+	if is_animation_state_set_this_frame and not force:
+		return
+	on_animation_state_change.emit(animation_state)
+#	match animation_state:
+#		Globals.ANIMATION_STATE.NONE:
+#			push_error(\"Animation state NONE provided\")
+#		_:
+#			push_error(\"Unrecognised animation state\")
+	is_animation_state_set_this_frame = true
+
+func attack_down():
+	pass
+
+func attack_held(delta):
+	pass
+
+func attack_up():
+	pass
+
+func special_down():
+	pass
+
+func special_held(delta):
+	pass
+
+func special_up():
+	pass
+"
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_3fibl"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath("AnimatedSprite2D:animation")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath("AnimatedSprite2D:flip_h")
+properties/2/spawn = false
+properties/2/replication_mode = 2
+properties/3/path = NodePath("AnimatedSprite2D:visible")
+properties/3/spawn = false
+properties/3/replication_mode = 2
+properties/4/path = NodePath("AnimatedSprite2D:modulate")
+properties/4/spawn = false
+properties/4/replication_mode = 2
+properties/5/path = NodePath(".:player_id")
+properties/5/spawn = true
+properties/5/replication_mode = 0
+properties/6/path = NodePath("DEBUGICON:position")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
+size = Vector2(16, 16)
+
+[sub_resource type="GDScript" id="GDScript_7domr"]
+script/source = "extends Sprite2D
+
+@export var player_input: MultiplayerSynchronizer
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	global_position = player_input.mouse_position
+"
+
+[node name="Eire" type="CharacterBody2D" node_paths=PackedStringArray("input")]
+script = SubResource("GDScript_7glg2")
+input = NodePath("PlayerInput")
+
+[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_3fibl")
+
+[node name="PlayerInput" parent="." instance=ExtResource("1_gs010")]
+
+[node name="Name" parent="." instance=ExtResource("2_1se7w")]
+
+[node name="AnimatedSprite2D" parent="." instance=ExtResource("3_4marn")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(1, 2)
+shape = SubResource("RectangleShape2D_s81vj")
+
+[node name="Health" parent="." node_paths=PackedStringArray("character_id") instance=ExtResource("4_w0m01")]
+character_id = NodePath("../CharacterID")
+
+[node name="HealthBar" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("5_6jc2y")]
+health_component = NodePath("../Health")
+
+[node name="CharacterID" parent="." instance=ExtResource("6_imbxe")]
+value = 3
+
+[node name="DEBUGICON" type="Sprite2D" parent="." node_paths=PackedStringArray("player_input")]
+texture = ExtResource("7_mwgif")
+script = SubResource("GDScript_7domr")
+player_input = NodePath("../PlayerInput")

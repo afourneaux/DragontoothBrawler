@@ -75,7 +75,8 @@ func spawn_player(player_id):
 	if not multiplayer.is_server():
 		push_error(\"spawn_player called from client\")
 	var spawner = get_spawner()
-	var character = load(\"res://Prefabs/Player.tscn\").instantiate()
+	# TODO: Get the selected character
+	var character = load(\"res://Prefabs/GameObjects/Characters/Eire.tscn\").instantiate()
 	character.name = str(player_id)
 	character.position = $Level/Spawners.get_child(spawner).position
 	character.player_id = player_id
@@ -130,7 +131,6 @@ func _ready():
 	limit_left = -LEVEL_VIEW_BUFFER
 	limit_right = level_size.x + LEVEL_VIEW_BUFFER
 	limit_bottom = level_size.y + LEVEL_VIEW_BUFFER
-	
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -260,7 +260,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://Prefabs/Player.tscn")
+_spawnable_scenes = PackedStringArray("res://Prefabs/GameObjects/Characters/Eire.tscn")
 spawn_path = NodePath("../Players")
 
 [node name="Camera" type="Camera2D" parent="."]

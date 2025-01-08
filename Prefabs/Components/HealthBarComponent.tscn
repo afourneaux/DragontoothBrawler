@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3 uid="uid://bo84muemnq4jy"]
+
+[ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="1_tvjpg"]
+
+[sub_resource type="GDScript" id="GDScript_2ebey"]
+resource_name = "HealthBar"
+script/source = "extends TextureProgressBar
+
+@export var health_component: Node
+
+const MAX_VISIBILITY = 0.9
+const VISIBILITY_CHANGE_SPEED = 1
+const VISIBILITY_CHANGE_DELAY = 3
+var visibility_change_timer = 0
+var current_visibility = 0
+
+func _ready():
+	health_component.on_health_changed.connect(show_health)
+
+func show_health(new_value):
+	value = new_value
+	current_visibility = MAX_VISIBILITY
+	visibility_change_timer = 0
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if current_visibility > 0:
+		visibility_change_timer += delta
+		if visibility_change_timer >= VISIBILITY_CHANGE_DELAY:
+			current_visibility = max(
+				current_visibility - (delta * VISIBILITY_CHANGE_SPEED), 0)
+	modulate.a = current_visibility
+"
+
+[node name="HealthBar" type="TextureProgressBar"]
+modulate = Color(1, 1, 1, 0.588235)
+custom_minimum_size = Vector2(75, 10)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -37.5
+offset_top = -27.5
+offset_right = 37.5
+offset_bottom = -17.5
+grow_horizontal = 2
+grow_vertical = 0
+nine_patch_stretch = true
+texture_under = ExtResource("1_tvjpg")
+texture_progress = ExtResource("1_tvjpg")
+tint_under = Color(1, 0, 0, 1)
+tint_progress = Color(0, 0.419608, 0, 1)
+script = SubResource("GDScript_2ebey")

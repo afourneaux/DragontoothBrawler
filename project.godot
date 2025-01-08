@@ -23,6 +23,7 @@ Globals="*res://Scripts/Globals.gd"
 PlayerData="*res://Scripts/PlayerData.gd"
 Server="*res://Scripts/Server.gd"
 Audio="*res://Scripts/Audio.gd"
+CharacterStats="*res://Scripts/CharacterStats.gd"
 
 [input]
 

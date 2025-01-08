@@ -29,9 +29,11 @@ func _ready():
 	$Button_Ready.modulate = RED
 	$Button_Clear.text = \"Clear Character\"
 	Server.on_data_changed.connect(_update_player_data)
-	for character in Globals.CHARACTER_NAMES.keys():
+	for character in CharacterStats.Character.values():
+		if character == CharacterStats.Character.NONE:
+			continue
 		var character_instance = _character_package.instantiate()
-		character_instance.get_node('Label').text = Globals.CHARACTER_NAMES[character]
+		character_instance.get_node('Label').text = CharacterStats.get_character_name(character)
 		character_instance.character = character
 		character_instance.get_node('Portrait').texture = get_character_portrait(character)
 		character_instance._on_pressed.connect(_on_character_pressed) 
@@ -62,7 +64,7 @@ func _update_player_data():
 		else:
 			player_instance.modulate = RED
 			all_ready = false
-		if player_data[player][PlayerData.Field.CHARACTER] != Globals.Character.NONE:
+		if player_data[player][PlayerData.Field.CHARACTER] != CharacterStats.Character.NONE:
 			character_panels[player_data[player][PlayerData.Field.CHARACTER]].is_selected = true
 		$PlayerList.add_child(player_instance)
 	if all_ready and !is_game_starting:
@@ -73,17 +75,17 @@ func _update_player_data():
 func _on_character_pressed(character):
 	if !PlayerData.is_ready:
 		PlayerData.selected_character = character
-		Audio.play_bg_music(load(\"res://Assets/Audio/Characters/%s.wav\" % Globals.CHARACTER_NAMES[character]))
+		Audio.play_bg_music(load(\"res://Assets/Audio/Characters/%s.wav\" % CharacterStats.get_character_name(character)))
 		Audio.play_sfx(\"UISelect\")
 
 func _on_button_clear_pressed():
-	PlayerData.selected_character = Globals.Character.NONE
+	PlayerData.selected_character = CharacterStats.Character.NONE
 	if bg_music != null:
 		Audio.play_bg_music(bg_music)
 	_on_button_toggled(false)
 
 func _on_button_toggled(toggled_on):
-	if !toggled_on or PlayerData.selected_character == Globals.Character.NONE:
+	if !toggled_on or PlayerData.selected_character == CharacterStats.Character.NONE:
 		Audio.play_sfx(\"UICancel\")
 		PlayerData.is_ready = false
 		$Button_Ready.button_pressed = false
@@ -95,8 +97,7 @@ func _on_button_toggled(toggled_on):
 
 func get_character_portrait(character):
 	var portrait_package = null
-	if Globals.CHARACTER_NAMES.has(character):
-		portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % Globals.CHARACTER_NAMES[character])
+	portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % CharacterStats.get_character_name(character))
 	if portrait_package == null:
 		portrait_package = load(\"res://Assets/Sprites/invalid.bmp\")
 	return portrait_package
