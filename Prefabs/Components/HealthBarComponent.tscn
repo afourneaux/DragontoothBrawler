@@ -10,11 +10,12 @@ script/source = "extends TextureProgressBar
 
 const MAX_VISIBILITY = 0.9
 const VISIBILITY_CHANGE_SPEED = 1
-const VISIBILITY_CHANGE_DELAY = 3
+const VISIBILITY_CHANGE_DELAY = 1
 var visibility_change_timer = 0
 var current_visibility = 0
 
 func _ready():
+	max_value = health_component.max_health
 	health_component.on_health_changed.connect(show_health)
 
 func show_health(new_value):

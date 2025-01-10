@@ -29,7 +29,7 @@ func play_bg_music(value):
 		else:
 			bg_node.stream = bg_music
 
-func play_sfx(audio, loop=false):
+func play_sfx(audio, loop=false, volume=1.0):
 	var audio_resource = load("res://Assets/Audio/%s.wav" % audio)
 	if audio_resource == null:
 		push_error("Audio::play_sfx - Resource not found: %s" % audio)
@@ -37,6 +37,7 @@ func play_sfx(audio, loop=false):
 	var audio_node = AudioStreamPlayer.new()
 	add_child(audio_node)
 	audio_node.stream = audio_resource
+	audio_node.volume_db = linear_to_db(volume)
 	if not muted:
 		audio_node.play()
 	audio_ids = audio_ids + 1

@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://2pa1d2gnx8uf"]
+
+[sub_resource type="GDScript" id="GDScript_6y4eg"]
+resource_name = "Weapon"
+script/source = "extends Node
+
+
+@export var weapon_id: WeaponStats.Weapon
+var damage: int
+var force: int
+
+func _ready():
+	damage = WeaponStats.get_damage(weapon_id)
+	force = WeaponStats.get_damage(weapon_id)
+"
+
+[node name="WeaponComponent" type="Node"]
+script = SubResource("GDScript_6y4eg")

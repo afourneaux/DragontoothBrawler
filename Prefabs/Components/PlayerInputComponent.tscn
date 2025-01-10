@@ -12,11 +12,13 @@ properties/1/replication_mode = 1
 resource_name = "PlayerInput"
 script/source = "extends MultiplayerSynchronizer
 
+signal on_jump_pressed
+signal on_attack_down
+signal on_attack_up
+signal on_special_down
+signal on_special_up
 
 var lr_movement = 0
-var is_jumping = false
-var is_attack_held = false
-var is_special_held = false
 
 var mouse_position = Vector2(0,0)
 var is_mouse_down_left = false
@@ -51,15 +53,21 @@ func _process(delta):
 
 @rpc(\"call_local\")
 func jump():
-	is_jumping = true
+	on_jump_pressed.emit()
 
 @rpc(\"call_local\")
 func attack(is_held: bool):
-	is_attack_held = is_held
+	if is_held:
+		on_attack_down.emit()
+	else:
+		on_attack_up.emit()
 
 @rpc(\"call_local\")
 func special(is_held: bool):
-	is_special_held = is_held
+	if is_held:
+		on_special_down.emit()
+	else:
+		on_special_up.emit()
 "
 
 [node name="PlayerInput" type="MultiplayerSynchronizer"]

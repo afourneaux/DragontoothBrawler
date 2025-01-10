@@ -20,10 +20,11 @@ config/icon="res://icon.svg"
 [autoload]
 
 Globals="*res://Scripts/Globals.gd"
-PlayerData="*res://Scripts/PlayerData.gd"
 Server="*res://Scripts/Server.gd"
+PlayerData="*res://Scripts/PlayerData.gd"
 Audio="*res://Scripts/Audio.gd"
-CharacterStats="*res://Scripts/CharacterStats.gd"
+CharacterStats="*res://Scripts/Data/CharacterStats.gd"
+WeaponStats="*res://Scripts/Data/WeaponStats.gd"
 
 [input]
 

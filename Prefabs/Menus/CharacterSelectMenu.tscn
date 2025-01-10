@@ -67,10 +67,11 @@ func _update_player_data():
 		if player_data[player][PlayerData.Field.CHARACTER] != CharacterStats.Character.NONE:
 			character_panels[player_data[player][PlayerData.Field.CHARACTER]].is_selected = true
 		$PlayerList.add_child(player_instance)
-	if all_ready and !is_game_starting:
-		start_countdown.rpc()
-	elif !all_ready and is_game_starting:
-		stop_countdown.rpc()
+	if multiplayer.is_server():
+		if all_ready and !is_game_starting:
+			start_countdown.rpc()
+		elif !all_ready and is_game_starting:
+			stop_countdown.rpc()
 
 func _on_character_pressed(character):
 	if !PlayerData.is_ready:

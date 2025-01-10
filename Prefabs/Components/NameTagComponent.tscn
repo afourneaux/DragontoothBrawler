@@ -1,6 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://dogjjojbtqi3f"]
+[gd_scene load_steps=3 format=3 uid="uid://dogjjojbtqi3f"]
 
 [ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_f0f6t"]
+
+[sub_resource type="GDScript" id="GDScript_eo0r0"]
+resource_name = "Name"
+script/source = "extends Label
+
+
+func _ready():
+	text = Server._player_data[get_parent().player_id][PlayerData.Field.NAME]
+"
 
 [node name="Name" type="Label"]
 anchors_preset = 7
@@ -18,3 +27,4 @@ theme_override_fonts/font = ExtResource("1_f0f6t")
 text = "TEXT_NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
+script = SubResource("GDScript_eo0r0")

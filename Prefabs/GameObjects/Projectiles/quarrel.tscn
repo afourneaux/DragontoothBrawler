@@ -1,33 +1,95 @@
-[gd_scene load_steps=4 format=3 uid="uid://bh63axkor25rs"]
+[gd_scene load_steps=5 format=3 uid="uid://bh63axkor25rs"]
 
 [ext_resource type="Texture2D" uid="uid://brw73seiks7s8" path="res://Assets/Sprites/Projectiles/quarrel.png" id="1_wrccb"]
 
 [sub_resource type="GDScript" id="GDScript_tw73y"]
-script/source = "extends Projectile
+script/source = "extends RigidBody2D
+
+@export var weapon_id: WeaponStats.Weapon
+var player_id: int
+var damage: int
+var force: int
+
+const speed = 500
 
 
-# Called when the node enters the scene tree for the first time.
+@export var replicated_position : Vector2
+@export var replicated_rotation : float
+@export var replicated_linear_velocity : Vector2
+@export var replicated_angular_velocity : float
+
+func _integrate_forces(_state):
+	if multiplayer.is_server():
+		replicated_position = position
+		replicated_rotation = rotation
+		replicated_linear_velocity = linear_velocity
+		replicated_angular_velocity = angular_velocity
+	else:
+		position = replicated_position
+		rotation = replicated_rotation
+		linear_velocity = replicated_linear_velocity
+		angular_velocity = replicated_angular_velocity
+
 func _ready():
-	pass # Replace with function body.
+	if multiplayer.is_server():
+		damage = WeaponStats.get_damage(weapon_id)
+		force = WeaponStats.get_damage(weapon_id)
+		var direction = Vector2(speed, 0).rotated(rotation)
+		look_at(global_position + direction.normalized())
+		apply_impulse(direction)
+	if player_id == multiplayer.get_unique_id():
+		Audio.play_sfx(\"Weapons/crossbow_shot\")
+	else:
+		Audio.play_sfx(\"Weapons/crossbow_shot\", false, 0.5)
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
+func _physics_process(delta):
+	if multiplayer.is_server():
+		look_at(global_position + linear_velocity.normalized())
+
+func _on_hit(body):
+	if multiplayer.is_server():
+		if body.is_in_group(\"Player\"):
+			if body.player_id == player_id:
+				return
+			var enemy_health = body.find_child(\"Health\")
+			enemy_health.health -= damage
+			body.velocity += Vector2(force, 0).rotated(rotation)
+		queue_free()
 "
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_840dc"]
-size = Vector2(11, 5)
+[sub_resource type="CircleShape2D" id="CircleShape2D_eqn2e"]
+radius = 3.0
 
-[node name="Quarrel" type="Node2D"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pslhq"]
+properties/0/path = NodePath(".:replicated_position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:replicated_rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:replicated_linear_velocity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:replicated_angular_velocity")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+
+[node name="Quarrel" type="RigidBody2D"]
+max_contacts_reported = 1
+contact_monitor = true
 script = SubResource("GDScript_tw73y")
-
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(4.5, -0.5)
-shape = SubResource("RectangleShape2D_840dc")
+weapon_id = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
 texture = ExtResource("1_wrccb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(6.5, -0.5)
+shape = SubResource("CircleShape2D_eqn2e")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_pslhq")
+
+[connection signal="body_entered" from="." to="." method="_on_hit"]
