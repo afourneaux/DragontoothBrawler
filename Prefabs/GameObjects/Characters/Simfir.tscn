@@ -1,12 +1,12 @@
-[gd_scene load_steps=13 format=3 uid="uid://b50v2k81sqp2d"]
+[gd_scene load_steps=13 format=3 uid="uid://0wex2qtmiq8u"]
 
-[ext_resource type="PackedScene" uid="uid://b0hfhk0ny8nep" path="res://Prefabs/Components/PlayerInputComponent.tscn" id="1_gs010"]
-[ext_resource type="PackedScene" uid="uid://dogjjojbtqi3f" path="res://Prefabs/Components/NameTagComponent.tscn" id="2_1se7w"]
-[ext_resource type="PackedScene" uid="uid://crfuirdfdicw1" path="res://Prefabs/Components/CharacterAnimatorComponent.tscn" id="3_4marn"]
-[ext_resource type="PackedScene" uid="uid://fegiokc44mma" path="res://Prefabs/Components/HealthComponent.tscn" id="4_w0m01"]
-[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="5_6jc2y"]
-[ext_resource type="PackedScene" uid="uid://bh8uj1angqxep" path="res://Prefabs/Components/CharacterIDComponent.tscn" id="6_imbxe"]
-[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="7_mwgif"]
+[ext_resource type="PackedScene" uid="uid://b0hfhk0ny8nep" path="res://Prefabs/Components/PlayerInputComponent.tscn" id="1_e6jwv"]
+[ext_resource type="PackedScene" uid="uid://dogjjojbtqi3f" path="res://Prefabs/Components/NameTagComponent.tscn" id="2_6x3q0"]
+[ext_resource type="PackedScene" uid="uid://crfuirdfdicw1" path="res://Prefabs/Components/CharacterAnimatorComponent.tscn" id="3_6gses"]
+[ext_resource type="PackedScene" uid="uid://fegiokc44mma" path="res://Prefabs/Components/HealthComponent.tscn" id="4_roq2t"]
+[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="5_kopnm"]
+[ext_resource type="PackedScene" uid="uid://bh8uj1angqxep" path="res://Prefabs/Components/CharacterIDComponent.tscn" id="6_hf3ny"]
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="7_ekvhp"]
 
 [sub_resource type="GDScript" id="GDScript_7glg2"]
 resource_name = "Player"
@@ -140,7 +140,7 @@ script/source = "extends Node2D
 
 @export var input: Node
 
-var quarrel_prefab = preload(\"res://Prefabs/GameObjects/Projectiles/quarrel.tscn\")
+var orb_prefab = preload(\"res://Prefabs/GameObjects/Projectiles/orb.tscn\")
 
 const COOLDOWN = 3
 const SPAWN_DISTANCE = 10
@@ -156,49 +156,49 @@ func fire():
 	if cooldown_timer >= 0:
 		return
 	cooldown_timer = COOLDOWN
-	var quarrel = quarrel_prefab.instantiate()
+	var orb = orb_prefab.instantiate()
 	var mouse_normal = (input.mouse_position - global_position).normalized()
-	quarrel.position = global_position + mouse_normal * SPAWN_DISTANCE
-	quarrel.rotation = mouse_normal.angle()
-	quarrel.player_id = get_parent().player_id
-	get_parent().weapons_node.add_child(quarrel, true)
+	orb.position = global_position + mouse_normal * SPAWN_DISTANCE
+	orb.rotation = mouse_normal.angle()
+	orb.player_id = get_parent().player_id
+	get_parent().weapons_node.add_child(orb, true)
 "
 
-[node name="Eire" type="CharacterBody2D" node_paths=PackedStringArray("input") groups=["Player"]]
+[node name="Simfir" type="CharacterBody2D" node_paths=PackedStringArray("input") groups=["Player"]]
 script = SubResource("GDScript_7glg2")
 input = NodePath("PlayerInput")
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_3fibl")
 
-[node name="PlayerInput" parent="." instance=ExtResource("1_gs010")]
+[node name="PlayerInput" parent="." instance=ExtResource("1_e6jwv")]
 
-[node name="Name" parent="." instance=ExtResource("2_1se7w")]
+[node name="Name" parent="." instance=ExtResource("2_6x3q0")]
 
-[node name="AnimatedSprite2D" parent="." instance=ExtResource("3_4marn")]
+[node name="AnimatedSprite2D" parent="." instance=ExtResource("3_6gses")]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(1, 2)
 shape = SubResource("RectangleShape2D_s81vj")
 
-[node name="Health" parent="." node_paths=PackedStringArray("character_id") instance=ExtResource("4_w0m01")]
+[node name="Health" parent="." node_paths=PackedStringArray("character_id") instance=ExtResource("4_roq2t")]
 character_id = NodePath("../CharacterID")
 
-[node name="HealthBar" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("5_6jc2y")]
+[node name="HealthBar" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("5_kopnm")]
 health_component = NodePath("../Health")
 
-[node name="CharacterID" parent="." instance=ExtResource("6_imbxe")]
-value = 3
+[node name="CharacterID" parent="." instance=ExtResource("6_hf3ny")]
+value = 8
 
 [node name="DEBUGICON" type="Sprite2D" parent="." node_paths=PackedStringArray("player_input")]
-texture = ExtResource("7_mwgif")
+texture = ExtResource("7_ekvhp")
 script = SubResource("GDScript_7domr")
 player_input = NodePath("../PlayerInput")
 
-[node name="Crossbow" type="Node2D" parent="." node_paths=PackedStringArray("input")]
+[node name="Spellblast" type="Node2D" parent="." node_paths=PackedStringArray("input")]
 script = SubResource("GDScript_ipx5j")
 input = NodePath("../PlayerInput")
 
-[connection signal="on_attack_down" from="PlayerInput" to="Crossbow" method="fire"]
+[connection signal="on_attack_down" from="PlayerInput" to="Spellblast" method="fire"]
 [connection signal="on_jump_pressed" from="PlayerInput" to="." method="jump"]
 [connection signal="on_health_changed" from="Health" to="." method="_check_health"]

@@ -16,7 +16,7 @@ var bg_music = preload(\"res://Assets/Audio/Menus/CharacterSelectMenu.wav\")
 
 var character_panels = {}
 var is_game_starting = false
-var TIME_TO_START = 5
+var TIME_TO_START = 1
 var start_timer = 0
 
 const RED = Color(1, 0.1, 0.1, 1)

@@ -76,11 +76,11 @@ func spawn_player(player_id):
 		push_error(\"spawn_player called from client\")
 	var spawner = get_spawner()
 	# TODO: Get the selected character
-	var character = load(\"res://Prefabs/GameObjects/Characters/Eire.tscn\").instantiate()
+	var character_name = CharacterStats.get_character_name(Server._player_data[player_id][PlayerData.Field.CHARACTER])
+	var character = load(\"res://Prefabs/GameObjects/Characters/%s.tscn\" % character_name).instantiate()
 	character.position = $Level/Spawners.get_child(spawner).position
 	character.player_id = player_id
 	character.on_death.connect(enqueue_player_spawn)
-	character.effects_node = $Effects
 	character.weapons_node = $Weapons
 	$Players.add_child(character, true)
 
