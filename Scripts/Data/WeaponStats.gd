@@ -3,6 +3,7 @@ extends Node
 enum Weapon {
 	NONE,
 	CROSSBOW,
+	ORB
 }
 enum Special {
 	NONE
@@ -33,5 +34,10 @@ const WEAPON_STATS = {
 		StatField.NAME: "Crossbow",
 		StatField.DAMAGE: 25,
 		StatField.FORCE: 50,
+	},
+	Weapon.ORB: {
+		StatField.NAME: "Orb",
+		StatField.DAMAGE: 10,
+		StatField.FORCE: 100,
 	},
 }

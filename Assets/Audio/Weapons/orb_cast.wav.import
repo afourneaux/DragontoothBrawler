@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dwrplcr7ksmf4"
-path="res://.godot/imported/attack_hammer.wav-0ee6f9c5550c6c41ca60ef7f49b44eb1.sample"
+path="res://.godot/imported/orb_cast.wav-f0c855fab249bc9683579abb9be52ce8.sample"
 
 [deps]
 
-source_file="res://Assets/Audio/attack_hammer.wav"
-dest_files=["res://.godot/imported/attack_hammer.wav-0ee6f9c5550c6c41ca60ef7f49b44eb1.sample"]
+source_file="res://Assets/Audio/Weapons/orb_cast.wav"
+dest_files=["res://.godot/imported/orb_cast.wav-f0c855fab249bc9683579abb9be52ce8.sample"]
 
 [params]
 
