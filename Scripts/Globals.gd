@@ -1,5 +1,8 @@
 extends Node
 
+# TODO investigate migrating globals to other object types
+# https://docs.godotengine.org/en/4.4/tutorials/best_practices/node_alternatives.html
+
 const SCENE_LOBBY_MENU = "LobbyMenu"
 const SCENE_MAIN_MENU = "MainMenu"
 const SCENE_CHARACTER_MENU = "CharacterSelectMenu"

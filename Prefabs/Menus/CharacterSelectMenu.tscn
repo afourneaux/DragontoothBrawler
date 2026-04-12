@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://ord0qayuyao"]
+[gd_scene format=3 uid="uid://ord0qayuyao"]
 
 [ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_2rumt"]
 [ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="2_5enw6"]
@@ -44,7 +44,7 @@ func _ready():
 func _process(delta):
 	if is_game_starting:
 		start_timer -= delta
-		$Countdown.text = str(ceil(start_timer))
+		$Countdown.text = str(ceili(start_timer))
 		if multiplayer.is_server() and start_timer <= 0:
 			start_game.rpc()
 
@@ -98,7 +98,8 @@ func _on_button_toggled(toggled_on):
 
 func get_character_portrait(character):
 	var portrait_package = null
-	portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % CharacterStats.get_character_name(character))
+	if character != CharacterStats.Character.NONE:
+		portrait_package = load(\"res://Assets/Sprites/Portraits/%s.png\" % CharacterStats.get_character_name(character))
 	if portrait_package == null:
 		portrait_package = load(\"res://Assets/Sprites/invalid.bmp\")
 	return portrait_package
@@ -119,7 +120,7 @@ func start_game():
 	on_start_game.emit()
 "
 
-[node name="CharacterSelectMenu" type="Control"]
+[node name="CharacterSelectMenu" type="Control" unique_id=1372507192]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -129,7 +130,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = SubResource("GDScript_l1sv3")
 
-[node name="CharacterList" type="GridContainer" parent="."]
+[node name="CharacterList" type="GridContainer" parent="." unique_id=231302962]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -145,7 +146,7 @@ grow_vertical = 2
 mouse_filter = 2
 columns = 4
 
-[node name="PlayerList" type="GridContainer" parent="."]
+[node name="PlayerList" type="GridContainer" parent="." unique_id=817212205]
 custom_minimum_size = Vector2(150, 350)
 layout_mode = 1
 anchors_preset = 6
@@ -161,7 +162,7 @@ grow_horizontal = 0
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Button_Ready" type="Button" parent="."]
+[node name="Button_Ready" type="Button" parent="." unique_id=288265520]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 1
 anchors_preset = 3
@@ -179,7 +180,7 @@ theme_override_fonts/font = ExtResource("1_2rumt")
 toggle_mode = true
 text = "TEXT_READY"
 
-[node name="Button_Clear" type="Button" parent="."]
+[node name="Button_Clear" type="Button" parent="." unique_id=786983098]
 custom_minimum_size = Vector2(200, 25)
 layout_mode = 1
 anchors_preset = 3
@@ -197,7 +198,7 @@ theme_override_fonts/font = ExtResource("1_2rumt")
 toggle_mode = true
 text = "TEXT_CLEAR"
 
-[node name="Countdown" type="Label" parent="."]
+[node name="Countdown" type="Label" parent="." unique_id=591897329]
 visible = false
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 1
