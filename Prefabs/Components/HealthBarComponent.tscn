@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://bo84muemnq4jy"]
+[gd_scene format=3 uid="uid://bo84muemnq4jy"]
 
 [ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="1_tvjpg"]
 
@@ -6,25 +6,27 @@
 resource_name = "HealthBar"
 script/source = "extends TextureProgressBar
 
-@export var health_component: Node
-
 const MAX_VISIBILITY = 0.9
 const VISIBILITY_CHANGE_SPEED = 1
 const VISIBILITY_CHANGE_DELAY = 1
+const VALUE_CHANGE_SPEED = 10
 var visibility_change_timer = 0
 var current_visibility = 0
 
-func _ready():
-	max_value = health_component.max_health
-	health_component.on_health_changed.connect(show_health)
+var target_value: int
 
 func show_health(new_value):
-	value = new_value
+	target_value = new_value
 	current_visibility = MAX_VISIBILITY
 	visibility_change_timer = 0
 
+func _ready():
+	target_value = max_value
+	set_process(multiplayer.is_server())
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	value = lerpf(value, target_value, delta * VALUE_CHANGE_SPEED)
 	if current_visibility > 0:
 		visibility_change_timer += delta
 		if visibility_change_timer >= VISIBILITY_CHANGE_DELAY:
@@ -33,7 +35,7 @@ func _process(delta):
 	modulate.a = current_visibility
 "
 
-[node name="HealthBar" type="TextureProgressBar"]
+[node name="HealthBar" type="TextureProgressBar" unique_id=264810046]
 modulate = Color(1, 1, 1, 0.588235)
 custom_minimum_size = Vector2(75, 10)
 anchors_preset = 7

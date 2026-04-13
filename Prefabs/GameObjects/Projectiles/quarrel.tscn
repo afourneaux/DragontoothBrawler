@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://bh63axkor25rs"]
+[gd_scene format=3 uid="uid://bh63axkor25rs"]
 
 [ext_resource type="Texture2D" uid="uid://brw73seiks7s8" path="res://Assets/Sprites/Projectiles/quarrel.png" id="1_wrccb"]
 
@@ -52,8 +52,7 @@ func _on_hit(body):
 		if body.is_in_group(\"Player\"):
 			if body.player_id == player_id:
 				return
-			var enemy_health = body.find_child(\"Health\")
-			enemy_health.health -= damage
+			body.health -= damage
 			body.velocity += Vector2(force, 0).rotated(rotation)
 		queue_free()
 "
@@ -75,27 +74,27 @@ properties/3/replication_mode = 1
 [sub_resource type="CircleShape2D" id="CircleShape2D_eqn2e"]
 radius = 3.0
 
-[node name="Quarrel" type="RigidBody2D"]
+[node name="Quarrel" type="RigidBody2D" unique_id=1078539868]
 continuous_cd = 1
-max_contacts_reported = 1
 contact_monitor = true
+max_contacts_reported = 1
 script = SubResource("GDScript_tw73y")
 weapon_id = 1
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1527198962]
 texture_filter = 1
 texture = ExtResource("1_wrccb")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1305386836]
 replication_config = SubResource("SceneReplicationConfig_pslhq")
 
-[node name="Area2D" type="Area2D" parent="."]
+[node name="Area2D" type="Area2D" parent="." unique_id=227192324]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1651625607]
 position = Vector2(6.5, -0.5)
 shape = SubResource("CircleShape2D_eqn2e")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1383309537]
 position = Vector2(6.5, -0.5)
 shape = SubResource("CircleShape2D_eqn2e")
 disabled = true

@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://b0hfhk0ny8nep"]
+[gd_scene format=3 uid="uid://b0hfhk0ny8nep"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nygse"]
 properties/0/path = NodePath(".:lr_movement")
@@ -70,9 +70,9 @@ func special(is_held: bool):
 		on_special_up.emit()
 "
 
-[node name="PlayerInput" type="MultiplayerSynchronizer"]
+[node name="PlayerInput" type="MultiplayerSynchronizer" unique_id=407094724]
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_nygse")
 script = SubResource("GDScript_13shx")
 
-[node name="MouseTracker" type="Node2D" parent="."]
+[node name="MouseTracker" type="Node2D" parent="." unique_id=777504699]

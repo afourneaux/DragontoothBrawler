@@ -1,10 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://b3lmfcik1cwwm"]
+[gd_scene format=3 uid="uid://b3lmfcik1cwwm"]
 
 [ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_2f75f"]
 
 [sub_resource type="GDScript" id="GDScript_yc5rg"]
 resource_name = "Game"
 script/source = "extends Node
+
+const character_scene = preload(\"res://Prefabs/GameObjects/Character.tscn\")
 
 var spawner_timers = []
 const SPAWNER_REFRESH_TIME = 10
@@ -75,12 +77,11 @@ func spawn_player(player_id):
 	if not multiplayer.is_server():
 		push_error(\"spawn_player called from client\")
 	var spawner = get_spawner()
-	# TODO: Get the selected character
-	var character_name = CharacterStats.get_character_name(Server._player_data[player_id][PlayerData.Field.CHARACTER])
-	var character = load(\"res://Prefabs/GameObjects/Characters/%s.tscn\" % character_name).instantiate()
+	# TODO: Change character generation dinto some sort of constructor or factory
+	var character = character_scene.instantiate()
 	character.position = $Level/Spawners.get_child(spawner).position
 	character.player_id = player_id
-	character.on_death.connect(enqueue_player_spawn)
+	character.on_death.connect(on_character_died)
 	character.weapons_node = $Weapons
 	$Players.add_child(character, true)
 
@@ -90,6 +91,9 @@ func check_player_out_of_bounds():
 	for player in $Players.get_children():
 		if player.position.y > $Level/LevelBounds.position.y:
 			player.die()
+
+func on_character_died(player_id):
+	enqueue_player_spawn(player_id)
 
 func enqueue_player_spawn(player_id, on_delay=true):
 	if not multiplayer.is_server():
@@ -172,95 +176,95 @@ func set_to_position():
 	to_zoom = base_zoom * Vector2(zoom_factor, zoom_factor)
 "
 
-[node name="GameRoot" type="Node"]
+[node name="GameRoot" type="Node" unique_id=1679803556]
 script = SubResource("GDScript_yc5rg")
 
-[node name="Level" type="Node2D" parent="."]
+[node name="Level" type="Node2D" parent="." unique_id=135929501]
 
-[node name="Spawners" type="Node" parent="Level"]
+[node name="Spawners" type="Node" parent="Level" unique_id=646410003]
 
-[node name="0" type="Node2D" parent="Level/Spawners"]
+[node name="0" type="Node2D" parent="Level/Spawners" unique_id=924144217]
 position = Vector2(178, 497)
 
-[node name="1" type="Node2D" parent="Level/Spawners"]
+[node name="1" type="Node2D" parent="Level/Spawners" unique_id=1744309963]
 position = Vector2(89, 105)
 
-[node name="2" type="Node2D" parent="Level/Spawners"]
+[node name="2" type="Node2D" parent="Level/Spawners" unique_id=1972839514]
 position = Vector2(455, 497)
 
-[node name="3" type="Node2D" parent="Level/Spawners"]
+[node name="3" type="Node2D" parent="Level/Spawners" unique_id=1844536169]
 position = Vector2(636, 344)
 
-[node name="4" type="Node2D" parent="Level/Spawners"]
+[node name="4" type="Node2D" parent="Level/Spawners" unique_id=1256116650]
 position = Vector2(1007, 358)
 
-[node name="5" type="Node2D" parent="Level/Spawners"]
+[node name="5" type="Node2D" parent="Level/Spawners" unique_id=786520319]
 position = Vector2(327, 497)
 
-[node name="6" type="Node2D" parent="Level/Spawners"]
+[node name="6" type="Node2D" parent="Level/Spawners" unique_id=847995999]
 position = Vector2(824, 353)
 
-[node name="7" type="Node2D" parent="Level/Spawners"]
+[node name="7" type="Node2D" parent="Level/Spawners" unique_id=963692299]
 position = Vector2(322, 239)
 
-[node name="LevelBlocks" type="Node2D" parent="Level"]
+[node name="LevelBlocks" type="Node2D" parent="Level" unique_id=1768666689]
 
-[node name="StaticBody2D" type="StaticBody2D" parent="Level/LevelBlocks"]
+[node name="StaticBody2D" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=297011958]
 position = Vector2(324, 568)
 scale = Vector2(34.36, 2.52)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D" unique_id=2076544715]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D" unique_id=2032556678]
 texture = ExtResource("1_2f75f")
 
-[node name="StaticBody2D2" type="StaticBody2D" parent="Level/LevelBlocks"]
+[node name="StaticBody2D2" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=844731364]
 position = Vector2(800, 414)
 scale = Vector2(34.36, 2.52)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D2" unique_id=424627964]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D2"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D2" unique_id=1906959422]
 texture = ExtResource("1_2f75f")
 
-[node name="StaticBody2D3" type="StaticBody2D" parent="Level/LevelBlocks"]
+[node name="StaticBody2D3" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=1581896023]
 position = Vector2(85, 302)
 scale = Vector2(3.74842, 19.5922)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D3" unique_id=1606439499]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D3"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D3" unique_id=656255440]
 texture = ExtResource("1_2f75f")
 
-[node name="StaticBody2D4" type="StaticBody2D" parent="Level/LevelBlocks"]
+[node name="StaticBody2D4" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=1504703476]
 position = Vector2(320, 318)
 scale = Vector2(11.36, 2.52)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D4"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D4" unique_id=1233396273]
 position = Vector2(0, -2.38419e-07)
 shape = SubResource("RectangleShape2D_2gbds")
 
-[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D4"]
+[node name="Sprite2D" type="Sprite2D" parent="Level/LevelBlocks/StaticBody2D4" unique_id=496784006]
 texture = ExtResource("1_2f75f")
 
-[node name="HitBoxes" type="Node2D" parent="Level"]
+[node name="HitBoxes" type="Node2D" parent="Level" unique_id=418930720]
 
-[node name="LevelBounds" type="Node2D" parent="Level"]
+[node name="LevelBounds" type="Node2D" parent="Level" unique_id=1213261073]
 position = Vector2(1150, 650)
 
-[node name="Effects" type="Node" parent="."]
+[node name="Effects" type="Node" parent="." unique_id=1138830289]
 
-[node name="Weapons" type="Node" parent="."]
+[node name="Weapons" type="Node" parent="." unique_id=718512317]
 
-[node name="Players" type="Node" parent="."]
+[node name="Players" type="Node" parent="." unique_id=415372532]
 
-[node name="UI" type="Control" parent="."]
+[node name="UI" type="Control" parent="." unique_id=1165958206]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -268,15 +272,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="WeaponSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://Prefabs/GameObjects/Projectiles/quarrel.tscn")
+[node name="WeaponSpawner" type="MultiplayerSpawner" parent="." unique_id=1190194600]
+_spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s")
 spawn_path = NodePath("../Weapons")
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://Prefabs/GameObjects/Characters/Eire.tscn")
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2146464543]
+_spawnable_scenes = PackedStringArray("uid://b50v2k81sqp2d")
 spawn_path = NodePath("../Players")
 
-[node name="Camera" type="Camera2D" parent="."]
+[node name="Camera" type="Camera2D" parent="." unique_id=893467698]
 limit_left = 0
 limit_top = 0
 script = SubResource("GDScript_d1d7t")

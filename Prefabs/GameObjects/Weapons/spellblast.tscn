@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://bg2arhwkkgmqp"]
+
+[sub_resource type="GDScript" id="GDScript_ipx5j"]
+resource_name = "Spellblast"
+script/source = "extends Node2D
+
+var input: Node
+
+var orb_prefab = preload(\"res://Prefabs/GameObjects/Projectiles/orb.tscn\")
+
+const COOLDOWN = 3
+const SPAWN_DISTANCE = 10
+
+var cooldown_timer = 0
+
+func _ready():
+	input.on_attack_down.connect(fire)
+
+
+func _process(delta):
+	if cooldown_timer >= 0:
+		cooldown_timer -= delta
+
+func fire():
+	# TODO: Hold to charge, release to fire blast
+	if cooldown_timer >= 0:
+		return
+	cooldown_timer = COOLDOWN
+	var orb = orb_prefab.instantiate()
+	var mouse_normal = (input.mouse_position - global_position).normalized()
+	orb.position = global_position + mouse_normal * SPAWN_DISTANCE
+	orb.rotation = mouse_normal.angle()
+	orb.player_id = get_parent().player_id
+	get_parent().weapons_node.add_child(orb, true)
+"
+
+[node name="Spellblast" type="Node2D" unique_id=2080712345]
+script = SubResource("GDScript_ipx5j")

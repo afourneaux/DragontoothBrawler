@@ -1,12 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://b50v2k81sqp2d"]
+[gd_scene format=3 uid="uid://b50v2k81sqp2d"]
 
-[ext_resource type="PackedScene" uid="uid://b0hfhk0ny8nep" path="res://Prefabs/Components/PlayerInputComponent.tscn" id="1_gs010"]
-[ext_resource type="PackedScene" uid="uid://dogjjojbtqi3f" path="res://Prefabs/Components/NameTagComponent.tscn" id="2_1se7w"]
-[ext_resource type="PackedScene" uid="uid://crfuirdfdicw1" path="res://Prefabs/Components/CharacterAnimatorComponent.tscn" id="3_4marn"]
-[ext_resource type="PackedScene" uid="uid://fegiokc44mma" path="res://Prefabs/Components/HealthComponent.tscn" id="4_w0m01"]
-[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="5_6jc2y"]
-[ext_resource type="PackedScene" uid="uid://bh8uj1angqxep" path="res://Prefabs/Components/CharacterIDComponent.tscn" id="6_imbxe"]
-[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="7_mwgif"]
+[ext_resource type="PackedScene" uid="uid://b0hfhk0ny8nep" path="res://Prefabs/Components/PlayerInputComponent.tscn" id="1_lhyj4"]
+[ext_resource type="PackedScene" uid="uid://dogjjojbtqi3f" path="res://Prefabs/Components/NameTagComponent.tscn" id="2_gkpsw"]
+[ext_resource type="PackedScene" uid="uid://crfuirdfdicw1" path="res://Prefabs/Components/CharacterAnimatorComponent.tscn" id="3_d0eog"]
+[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="5_8u5i8"]
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="6_h62nw"]
 
 [sub_resource type="GDScript" id="GDScript_7glg2"]
 resource_name = "Player"
@@ -14,6 +12,7 @@ script/source = "extends CharacterBody2D
 
 signal on_death
 signal on_animation_state_change
+signal on_health_changed
 
 @export var input: Node
 var weapons_node: Node
@@ -31,7 +30,8 @@ var is_animation_state_set_this_frame = false
 var is_attack_down = false
 var is_special_down = false
 
-var player_id = 1:
+var character_id: int
+var player_id: int = 1:
 	set (value):
 		player_id = value
 		input.set_multiplayer_authority(value)
@@ -40,12 +40,28 @@ func die():
 	on_death.emit(player_id)
 	self.queue_free()
 
-func _check_health(health):
-	if health <= 0:
-		die()
+var max_health: int
+var health: int:
+	set(value):
+		var new_health = clamp(value, 0, max_health)
+		if new_health == health:
+			return
+		health = new_health
+		on_health_changed.emit(new_health)
+		if health <= 0:
+			die()
 
 func _ready():
 	set_physics_process(multiplayer.is_server())
+	character_id = Server._player_data[player_id][PlayerData.Field.CHARACTER]
+	max_health = CharacterStats.get_health(character_id)
+	health = max_health
+	$HealthBar.max_value = max_health
+	on_health_changed.connect($HealthBar.show_health)
+	if is_multiplayer_authority():
+		var weapon = CharacterStats.get_weapon(character_id).instantiate()
+		weapon.input = $PlayerInput
+		add_child(weapon)
 
 func _physics_process(delta):
 	is_animation_state_set_this_frame = false
@@ -109,12 +125,15 @@ properties/5/replication_mode = 2
 properties/6/path = NodePath("DEBUGICON:position")
 properties/6/spawn = true
 properties/6/replication_mode = 1
-properties/7/path = NodePath("Health:health")
-properties/7/spawn = false
+properties/7/path = NodePath("HealthBar:value")
+properties/7/spawn = true
 properties/7/replication_mode = 2
-properties/8/path = NodePath("CharacterID:value")
-properties/8/spawn = false
+properties/8/path = NodePath("HealthBar:max_value")
+properties/8/spawn = true
 properties/8/replication_mode = 2
+properties/9/path = NodePath("HealthBar:modulate:a")
+properties/9/spawn = true
+properties/9/replication_mode = 1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
 size = Vector2(16, 16)
@@ -134,71 +153,28 @@ func _process(delta):
 	global_position = player_input.mouse_position
 "
 
-[sub_resource type="GDScript" id="GDScript_ipx5j"]
-resource_name = "Crossbow"
-script/source = "extends Node2D
-
-@export var input: Node
-
-var quarrel_prefab = preload(\"res://Prefabs/GameObjects/Projectiles/quarrel.tscn\")
-
-const COOLDOWN = 3
-const SPAWN_DISTANCE = 10
-
-var cooldown_timer = 0
-
-
-func _process(delta):
-	if cooldown_timer >= 0:
-		cooldown_timer -= delta
-
-func fire():
-	if cooldown_timer >= 0:
-		return
-	cooldown_timer = COOLDOWN
-	var quarrel = quarrel_prefab.instantiate()
-	var mouse_normal = (input.mouse_position - global_position).normalized()
-	quarrel.position = global_position + mouse_normal * SPAWN_DISTANCE
-	quarrel.rotation = mouse_normal.angle()
-	quarrel.player_id = get_parent().player_id
-	get_parent().weapons_node.add_child(quarrel, true)
-"
-
-[node name="Eire" type="CharacterBody2D" node_paths=PackedStringArray("input") groups=["Player"]]
+[node name="Character" type="CharacterBody2D" unique_id=1035501638 node_paths=PackedStringArray("input") groups=["Player"]]
 script = SubResource("GDScript_7glg2")
 input = NodePath("PlayerInput")
 
-[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=2031647204]
 replication_config = SubResource("SceneReplicationConfig_3fibl")
 
-[node name="PlayerInput" parent="." instance=ExtResource("1_gs010")]
+[node name="PlayerInput" parent="." unique_id=1605806234 instance=ExtResource("1_lhyj4")]
 
-[node name="Name" parent="." instance=ExtResource("2_1se7w")]
+[node name="Name" parent="." unique_id=1824142300 instance=ExtResource("2_gkpsw")]
 
-[node name="AnimatedSprite2D" parent="." instance=ExtResource("3_4marn")]
+[node name="AnimatedSprite2D" parent="." unique_id=1496809388 instance=ExtResource("3_d0eog")]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1795853909]
 scale = Vector2(1, 2)
 shape = SubResource("RectangleShape2D_s81vj")
 
-[node name="Health" parent="." node_paths=PackedStringArray("character_id") instance=ExtResource("4_w0m01")]
-character_id = NodePath("../CharacterID")
+[node name="HealthBar" parent="." unique_id=1288418191 instance=ExtResource("5_8u5i8")]
 
-[node name="HealthBar" parent="." node_paths=PackedStringArray("health_component") instance=ExtResource("5_6jc2y")]
-health_component = NodePath("../Health")
-
-[node name="CharacterID" parent="." instance=ExtResource("6_imbxe")]
-value = 3
-
-[node name="DEBUGICON" type="Sprite2D" parent="." node_paths=PackedStringArray("player_input")]
-texture = ExtResource("7_mwgif")
+[node name="DEBUGICON" type="Sprite2D" parent="." unique_id=1854659733 node_paths=PackedStringArray("player_input")]
+texture = ExtResource("6_h62nw")
 script = SubResource("GDScript_7domr")
 player_input = NodePath("../PlayerInput")
 
-[node name="Crossbow" type="Node2D" parent="." node_paths=PackedStringArray("input")]
-script = SubResource("GDScript_ipx5j")
-input = NodePath("../PlayerInput")
-
-[connection signal="on_attack_down" from="PlayerInput" to="Crossbow" method="fire"]
 [connection signal="on_jump_pressed" from="PlayerInput" to="." method="jump"]
-[connection signal="on_health_changed" from="Health" to="." method="_check_health"]
