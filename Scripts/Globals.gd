@@ -7,6 +7,7 @@ const SCENE_LOBBY_MENU = "LobbyMenu"
 const SCENE_MAIN_MENU = "MainMenu"
 const SCENE_CHARACTER_MENU = "CharacterSelectMenu"
 const MAX_PLAYERS = 8
+const PLAYER_SPAWN_DELAY = 3
 
 # Audio
 const AUDIO_NOT_OWNED_VOLUME_FACTOR = 0.5

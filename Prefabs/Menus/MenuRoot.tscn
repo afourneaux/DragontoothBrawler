@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cgtvlcl111o0k"]
+[gd_scene format=3 uid="uid://cgtvlcl111o0k"]
 
 [ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="1_t3m4n"]
 [ext_resource type="Texture2D" uid="uid://blu2rcswgr432" path="res://Assets/Sprites/Spiral_Staircase_logo.png" id="2_ji87e"]
@@ -52,7 +52,7 @@ func _on_mute_btn_toggled(toggled_on):
 		Audio.unmute()
 "
 
-[node name="MenuRoot" type="Control"]
+[node name="MenuRoot" type="Control" unique_id=1612306005]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -61,7 +61,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_ud6xk")
 
-[node name="GameTitle" type="Label" parent="."]
+[node name="GameTitle" type="Label" parent="." unique_id=1761412002]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -69,11 +69,11 @@ offset_top = 30.0
 offset_bottom = 53.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("1_t3m4n")
-theme_override_font_sizes/font_size = 51
+theme_override_font_sizes/font_size = 81
 text = "TEXT_TITLE"
 horizontal_alignment = 1
 
-[node name="SSPLogo" type="TextureRect" parent="."]
+[node name="SSPLogo" type="TextureRect" parent="." unique_id=771771649]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -85,7 +85,7 @@ texture = ExtResource("2_ji87e")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Mute" type="TextureButton" parent="."]
+[node name="Mute" type="TextureButton" parent="." unique_id=194949877]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -100,6 +100,6 @@ texture_pressed = ExtResource("4_t1sad")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="ActiveMenu" type="Node" parent="."]
+[node name="ActiveMenu" type="Node" parent="." unique_id=1041959998]
 
 [connection signal="toggled" from="Mute" to="." method="_on_mute_btn_toggled"]

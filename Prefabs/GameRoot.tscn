@@ -6,24 +6,31 @@
 resource_name = "Game"
 script/source = "extends Node
 
+signal on_death
+
 const character_scene = preload(\"res://Prefabs/GameObjects/Character.tscn\")
+const life_counter_scene = preload(\"res://Prefabs/Menus/UI/life_counter.tscn\")
 
 var spawner_timers = []
+var life_counters = {}
 const SPAWNER_REFRESH_TIME = 10
 var player_spawn_queue = {}
-const PLAYER_SPAWN_DELAY = 3
+const LIVES = 3
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Server.on_data_changed.connect(back_to_menu)
 	var music = load(\"res://Assets/Audio/battle_theme.wav\")
 	Audio.play_bg_music(music)
-	# TODO: Create UI guff
+	for player_id in Server._player_data:
+		Server._player_data[player_id][PlayerData.Field.LIVES] = LIVES
 	if multiplayer.is_server():
 		for spawner in range($Level/Spawners.get_child_count()):
 			spawner_timers.append(0)
 		for player_id in Server._player_data:
+			Server._player_data[player_id][PlayerData.Field.LIVES] = LIVES
 			enqueue_player_spawn(player_id, false)
+	setup_ui()
 
 func back_to_menu():
 	Server.on_data_changed.disconnect(back_to_menu)
@@ -39,6 +46,14 @@ func _process(delta):
 		advance_spawn_timers(delta)
 		spawn_enqueued_players(delta)
 		check_player_out_of_bounds()
+		check_victory()
+
+func setup_ui():
+	for player_id in Server._player_data:
+		var life_counter = life_counter_scene.instantiate()
+		life_counter.player_id = player_id
+		life_counters[player_id] = life_counter
+		$UI/Lives.add_child(life_counter)
 
 # SERVER ONLY
 func get_spawner():
@@ -65,7 +80,7 @@ func advance_spawn_timers(delta):
 func spawn_enqueued_players(delta):
 	var players_to_clear = []
 	for player_id in player_spawn_queue:
-		if player_spawn_queue[player_id] >= PLAYER_SPAWN_DELAY:
+		if player_spawn_queue[player_id] >= Globals.PLAYER_SPAWN_DELAY:
 			spawn_player(player_id)
 			players_to_clear.append(player_id)
 		else:
@@ -92,15 +107,35 @@ func check_player_out_of_bounds():
 		if player.position.y > $Level/LevelBounds.position.y:
 			player.die()
 
+func check_victory():
+	if not multiplayer.is_server():
+		push_error(\"check_victory called from client\")
+	for player_id in Server._player_data:
+		var remaining_players = []
+		if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:
+			remaining_players.append(player_id)
+		var isTie = false
+		var isWin = false
+		var victor = null
+		if len(remaining_players) == 1:
+			# TODO Set victory
+			victor = remaining_players[0]
+			isWin = true
+		if remaining_players.is_empty():
+			isWin = true
+			isTie = true
+
 func on_character_died(player_id):
-	enqueue_player_spawn(player_id)
+	Server._player_data[player_id][PlayerData.Field.LIVES] -= 1
+	if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:
+		enqueue_player_spawn(player_id)
 
 func enqueue_player_spawn(player_id, on_delay=true):
 	if not multiplayer.is_server():
 		push_error(\"enqueue_player_spawn called from client\")
 	if player_spawn_queue.has(player_id):
 		push_error(\"enqueue_player_spawn called, but player is already in queue\")
-	player_spawn_queue[player_id] = 0 if on_delay else PLAYER_SPAWN_DELAY
+	player_spawn_queue[player_id] = 0 if on_delay else Globals.PLAYER_SPAWN_DELAY
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]
@@ -264,14 +299,6 @@ position = Vector2(1150, 650)
 
 [node name="Players" type="Node" parent="." unique_id=415372532]
 
-[node name="UI" type="Control" parent="." unique_id=1165958206]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
 [node name="WeaponSpawner" type="MultiplayerSpawner" parent="." unique_id=1190194600]
 _spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s")
 spawn_path = NodePath("../Weapons")
@@ -284,3 +311,18 @@ spawn_path = NodePath("../Players")
 limit_left = 0
 limit_top = 0
 script = SubResource("GDScript_d1d7t")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=897887713]
+
+[node name="Lives" type="HBoxContainer" parent="UI" unique_id=1475615278]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -100.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 40

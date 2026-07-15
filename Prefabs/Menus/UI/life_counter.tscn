@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://cvsl8ldiir5fl"]
+
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_jw61m"]
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_ap21v"]
+
+[sub_resource type="GDScript" id="GDScript_1baup"]
+resource_name = "LifeCounter"
+script/source = "extends Control
+
+var player_id = -1
+var current_lives = -1
+
+var animation_timer = 0
+var current_colour = Color.WHITE
+const SHAKE_RANGE = 20
+var base_pos_x = -1
+var base_pos_y = -1
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	if player_id == -1:
+		push_error(\"LifeCounter - No player_id provided\")
+		queue_free()
+	$Name.text = Server._player_data[player_id][PlayerData.Field.NAME]
+	$Image.texture = CharacterStats.get_character_portrait(Server._player_data[player_id][PlayerData.Field.CHARACTER])
+	current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
+	base_pos_x = position.x
+	base_pos_y = position.y
+
+func _process(delta):
+	if current_lives != Server._player_data[player_id][PlayerData.Field.LIVES]:
+		current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
+		if current_lives <= 0:
+			$Lives.text = \"\"
+			current_colour = Color.BLACK
+		else:
+			$Lives.text = str(current_lives)
+		animation_timer = Globals.PLAYER_SPAWN_DELAY
+	if animation_timer > 0:
+		animation_timer -= delta
+		var modulation = animation_timer / Globals.PLAYER_SPAWN_DELAY
+		$Image.modulate = current_colour - Color(0, modulation, modulation, 0)
+		position.x = base_pos_x + ((randf() - 0.5) * SHAKE_RANGE * modulation)
+		position.y = base_pos_y + ((randf() - 0.5) * SHAKE_RANGE * modulation)
+"
+
+[node name="LifeCounter" type="Control" unique_id=100152605]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 3
+anchors_preset = 0
+script = SubResource("GDScript_1baup")
+
+[node name="Image" type="TextureRect" parent="." unique_id=1787878803]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -40.0
+offset_right = 40.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_jw61m")
+
+[node name="Name" type="Label" parent="." unique_id=888894002]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -19.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_ap21v")
+text = "NAME"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Lives" type="Label" parent="." unique_id=2053494241]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 19.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_ap21v")
+theme_override_font_sizes/font_size = 32
+text = "##"
+horizontal_alignment = 1
+vertical_alignment = 1

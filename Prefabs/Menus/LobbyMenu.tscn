@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://dlys5owhu1eur"]
+[gd_scene format=3 uid="uid://dlys5owhu1eur"]
 
 [ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_0bo8v"]
 
@@ -100,7 +100,7 @@ func _on_connection_success():
 	_on_join.emit(player_name)
 "
 
-[node name="LobbyMenu" type="Control"]
+[node name="LobbyMenu" type="Control" unique_id=1108780099]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -110,7 +110,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = SubResource("GDScript_nmaft")
 
-[node name="Inputs" type="GridContainer" parent="."]
+[node name="Inputs" type="GridContainer" parent="." unique_id=710238885]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -118,50 +118,54 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -250.0
-offset_top = -400.0
+offset_top = -577.0
 offset_right = 250.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="NameInput" type="LineEdit" parent="Inputs"]
-custom_minimum_size = Vector2(250, 30)
+[node name="NameInput" type="LineEdit" parent="Inputs" unique_id=271371496]
+custom_minimum_size = Vector2(500, 80)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 0
 theme_override_fonts/font = ExtResource("1_0bo8v")
+theme_override_font_sizes/font_size = 36
 placeholder_text = "TEXT_NAME"
 context_menu_enabled = false
 drag_and_drop_selection_enabled = false
 
-[node name="HostButton" type="Button" parent="Inputs"]
-custom_minimum_size = Vector2(250, 40)
+[node name="HostButton" type="Button" parent="Inputs" unique_id=1267592139]
+custom_minimum_size = Vector2(500, 80)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 6
 theme_override_fonts/font = ExtResource("1_0bo8v")
+theme_override_font_sizes/font_size = 42
 text = "TEXT_HOST"
 
-[node name="IPInput" type="LineEdit" parent="Inputs"]
-custom_minimum_size = Vector2(250, 30)
+[node name="IPInput" type="LineEdit" parent="Inputs" unique_id=1052015973]
+custom_minimum_size = Vector2(500, 80)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 10
 theme_override_fonts/font = ExtResource("1_0bo8v")
+theme_override_font_sizes/font_size = 28
 placeholder_text = "TEXT_IP
 "
 context_menu_enabled = false
 drag_and_drop_selection_enabled = false
 
-[node name="JoinButton" type="Button" parent="Inputs"]
-custom_minimum_size = Vector2(250, 40)
+[node name="JoinButton" type="Button" parent="Inputs" unique_id=1221281047]
+custom_minimum_size = Vector2(500, 80)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 2
 theme_override_fonts/font = ExtResource("1_0bo8v")
+theme_override_font_sizes/font_size = 42
 text = "TEXT_JOIN"
 
-[node name="WarningText" type="Label" parent="Inputs"]
+[node name="WarningText" type="Label" parent="Inputs" unique_id=1556211202]
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 size_flags_horizontal = 3

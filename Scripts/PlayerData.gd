@@ -2,7 +2,7 @@ extends Node
 
 signal on_update_player_data
 
-enum Field {NAME, CHARACTER, READY}
+enum Field {NAME, CHARACTER, READY, LIVES}
 
 # Basic info
 var _player_name = ""
@@ -32,11 +32,22 @@ var is_ready:
 	get:
 		return _is_ready
 
+# Game info
+var _lives = 0
+var lives:
+	set(value):
+		if value != _lives:
+			_lives = value
+			on_update_player_data.emit(package_data())
+	get:
+		return _lives
+
 func package_data():
 	return {
 		Field.NAME: player_name,
 		Field.CHARACTER: selected_character,
-		Field.READY: is_ready
+		Field.READY: is_ready,
+		Field.LIVES: lives
 	}
 
 func reset():
