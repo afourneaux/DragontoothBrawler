@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://c2df8gkfh6o7m"]
+
+[ext_resource type="PackedScene" uid="uid://b50v2k81sqp2d" path="res://Prefabs/Components/CharacterComponents/_Shared/CharacterBase.tscn" id="1_pq3a6"]
+[ext_resource type="PackedScene" uid="uid://deu56pwrm8afg" path="res://Prefabs/Components/CharacterComponents/Eire/crossbow.tscn" id="3_d0e8g"]
+[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="3_pq3a6"]
+
+[sub_resource type="GDScript" id="GDScript_g02fx"]
+script/source = "extends Character
+
+func _init():
+	character_id = CharacterStats.Character.EIRE
+
+static func get_floaty_factor(): return 2
+static func get_max_health(): return 70
+"
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pq3a6"]
+properties/0/path = NodePath(".:player_id")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:health")
+properties/1/spawn = false
+properties/1/replication_mode = 2
+
+[node name="Eire" type="Node2D" unique_id=2036003801]
+script = SubResource("GDScript_g02fx")
+
+[node name="Character" parent="." unique_id=1035501638 instance=ExtResource("1_pq3a6")]
+
+[node name="HealthBar" parent="." unique_id=264810046 instance=ExtResource("3_pq3a6")]
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=743799817]
+replication_config = SubResource("SceneReplicationConfig_pq3a6")
+
+[node name="Crossbow" parent="." unique_id=2092798113 instance=ExtResource("3_d0e8g")]

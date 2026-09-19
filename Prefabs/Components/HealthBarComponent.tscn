@@ -13,7 +13,8 @@ const VALUE_CHANGE_SPEED = 10
 var visibility_change_timer = 0
 var current_visibility = 0
 
-var target_value: int
+var parent: Character
+var target_value: float
 
 func show_health(new_value):
 	target_value = new_value
@@ -21,6 +22,8 @@ func show_health(new_value):
 	visibility_change_timer = 0
 
 func _ready():
+	parent = get_parent()
+	parent.on_health_changed.connect(show_health)
 	target_value = max_value
 	set_process(multiplayer.is_server())
 

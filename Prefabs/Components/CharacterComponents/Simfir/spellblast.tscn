@@ -1,12 +1,14 @@
 [gd_scene format=3 uid="uid://bg2arhwkkgmqp"]
 
+[ext_resource type="PackedScene" uid="uid://bv7oj6ul3yvxk" path="res://Prefabs/Components/CharacterComponents/_Shared/debugicon.tscn" id="1_v276j"]
+
 [sub_resource type="GDScript" id="GDScript_ipx5j"]
 resource_name = "Spellblast"
 script/source = "extends Node2D
 
-var input: Node
+@export var input: WeaponInput
 
-var orb_prefab = preload(\"res://Prefabs/GameObjects/Projectiles/orb.tscn\")
+var orb_prefab = preload(\"res://Prefabs/Components/CharacterComponents/Simfir/orb.tscn\")
 
 const COOLDOWN = 3
 const SPAWN_DISTANCE = 10
@@ -14,6 +16,7 @@ const SPAWN_DISTANCE = 10
 var cooldown_timer = 0
 
 func _ready():
+	assert(input != null)
 	input.on_attack_down.connect(fire)
 
 
@@ -34,5 +37,17 @@ func fire():
 	get_parent().weapons_node.add_child(orb, true)
 "
 
-[node name="Spellblast" type="Node2D" unique_id=2080712345]
+[sub_resource type="GDScript" id="GDScript_guodv"]
+script/source = "extends WeaponInput
+
+signal on_attack_down
+"
+
+[node name="Spellblast" type="Node2D" unique_id=2080712345 node_paths=PackedStringArray("input")]
 script = SubResource("GDScript_ipx5j")
+input = NodePath("Input")
+
+[node name="Input" type="Node2D" parent="." unique_id=419358979]
+script = SubResource("GDScript_guodv")
+
+[node name="DEBUGICON" parent="Input" unique_id=920042641 instance=ExtResource("1_v276j")]

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bv7oj6ul3yvxk"]
+
+[ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_0gl3d"]
+
+[sub_resource type="GDScript" id="GDScript_7domr"]
+script/source = "extends Sprite2D
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(_delta):
+	set_global_position(get_parent().mouse_position)
+"
+
+[node name="DEBUGICON" type="Sprite2D" unique_id=920042641]
+texture = ExtResource("1_0gl3d")
+script = SubResource("GDScript_7domr")

@@ -11,7 +11,7 @@ func _enter_tree():
 	bg_node.name = "BGMusicPlayer"
 	add_child(bg_node)
 
-func _process(delta):
+func _process(_delta):
 	for node in tracked_nodes:
 		if !tracked_nodes[node].node.is_playing():
 			if tracked_nodes[node].looping:

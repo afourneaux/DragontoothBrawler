@@ -18,7 +18,7 @@ func _input(event):
 		and event.is_pressed() and mouseOver:
 			_on_pressed.emit(character)
 
-func _process(delta):
+func _process(_delta):
 	if is_selected:
 		modulate = Color(0.2, 0.2, 0.2, 1)
 	else:

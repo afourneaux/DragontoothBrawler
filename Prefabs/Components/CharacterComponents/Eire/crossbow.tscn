@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://deu56pwrm8afg"]
+
+[ext_resource type="PackedScene" uid="uid://bv7oj6ul3yvxk" path="res://Prefabs/Components/CharacterComponents/_Shared/debugicon.tscn" id="1_ein5v"]
+
+[sub_resource type="GDScript" id="GDScript_ipx5j"]
+resource_name = "Crossbow"
+script/source = "extends Node2D
+
+@export var input: WeaponInput
+
+var quarrel_prefab = preload(\"res://Prefabs/Components/CharacterComponents/Eire/quarrel.tscn\")
+
+const COOLDOWN = 3
+const SPAWN_DISTANCE = 10
+
+var cooldown_timer = 0
+
+func _ready():
+	assert(input != null)
+	input.on_attack_down.connect(fire)
+
+func _process(delta):
+	if cooldown_timer >= 0:
+		cooldown_timer -= delta
+
+func fire(mouse_position):
+	if cooldown_timer >= 0:
+		return
+	cooldown_timer = COOLDOWN
+	var quarrel = quarrel_prefab.instantiate()
+	var mouse_normal = (mouse_position - global_position).normalized()
+	quarrel.position = global_position + mouse_normal * SPAWN_DISTANCE
+	quarrel.rotation = mouse_normal.angle()
+	quarrel.player_id = get_parent().player_id
+	get_parent().weapons_node.add_child(quarrel, true)
+"
+
+[sub_resource type="GDScript" id="GDScript_fkmk2"]
+script/source = "extends WeaponInput
+
+signal on_attack_down
+
+var is_mouse_down = false
+
+func _process(_delta):
+	super._process(_delta)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down == false:
+		is_mouse_down = true
+		if !is_mouse_down:
+			on_attack_down.emit(mouse_position)
+	else:
+		is_mouse_down = false
+"
+
+[node name="Crossbow" type="Node2D" unique_id=2092798113 node_paths=PackedStringArray("input")]
+script = SubResource("GDScript_ipx5j")
+input = NodePath("Input")
+
+[node name="Input" type="Node2D" parent="." unique_id=1421730106]
+script = SubResource("GDScript_fkmk2")
+
+[node name="DEBUGICON" parent="Input" unique_id=920042641 instance=ExtResource("1_ein5v")]

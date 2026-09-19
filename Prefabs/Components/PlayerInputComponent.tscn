@@ -4,32 +4,19 @@
 properties/0/path = NodePath(".:lr_movement")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath(".:mouse_position")
-properties/1/spawn = true
-properties/1/replication_mode = 1
 
 [sub_resource type="GDScript" id="GDScript_13shx"]
 resource_name = "PlayerInput"
 script/source = "extends MultiplayerSynchronizer
 
 signal on_jump_pressed
-signal on_attack_down
-signal on_attack_up
-signal on_special_down
-signal on_special_up
 
 var lr_movement = 0
-
-var mouse_position = Vector2(0,0)
-var is_mouse_down_left = false
-var is_mouse_down_right = false
 
 func _ready():
 	set_process(is_multiplayer_authority())
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	mouse_position = $MouseTracker.get_global_mouse_position()
+func _process(_delta):
 	lr_movement = 0
 	if Input.is_action_pressed(\"move_left\"):
 		lr_movement -= 1
@@ -37,42 +24,14 @@ func _process(delta):
 		lr_movement += 1
 	if Input.is_action_just_pressed(\"jump\"):
 		jump.rpc_id(1)
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == false:
-		attack.rpc_id(1, true)
-		is_mouse_down_left = true
-	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down_left == true:
-		attack.rpc_id(1, false)
-		is_mouse_down_left = false
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == false:
-		special.rpc_id(1, true)
-		is_mouse_down_right = true
-	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and is_mouse_down_right == true:
-		special.rpc_id(1, false)
-		is_mouse_down_right = false
 	
 
 @rpc(\"call_local\")
 func jump():
 	on_jump_pressed.emit()
-
-@rpc(\"call_local\")
-func attack(is_held: bool):
-	if is_held:
-		on_attack_down.emit()
-	else:
-		on_attack_up.emit()
-
-@rpc(\"call_local\")
-func special(is_held: bool):
-	if is_held:
-		on_special_down.emit()
-	else:
-		on_special_up.emit()
 "
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" unique_id=407094724]
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_nygse")
 script = SubResource("GDScript_13shx")
-
-[node name="MouseTracker" type="Node2D" parent="." unique_id=777504699]

@@ -6,10 +6,8 @@
 resource_name = "Game"
 script/source = "extends Node
 
-signal on_death
-
-const character_scene = preload(\"res://Prefabs/GameObjects/Character.tscn\")
 const life_counter_scene = preload(\"res://Prefabs/Menus/UI/life_counter.tscn\")
+
 
 var spawner_timers = []
 var life_counters = {}
@@ -92,12 +90,15 @@ func spawn_player(player_id):
 	if not multiplayer.is_server():
 		push_error(\"spawn_player called from client\")
 	var spawner = get_spawner()
-	# TODO: Change character generation dinto some sort of constructor or factory
-	var character = character_scene.instantiate()
-	character.position = $Level/Spawners.get_child(spawner).position
-	character.player_id = player_id
-	character.on_death.connect(on_character_died)
-	character.weapons_node = $Weapons
+	var spawn_position = $Level/Spawners.get_child(spawner).position
+	var character_id = Server._player_data[player_id][PlayerData.Field.CHARACTER]
+	var character = Character.factory_create(
+		character_id,
+		player_id,
+		spawn_position,
+		on_character_died,
+		$Weapons
+	)
 	$Players.add_child(character, true)
 
 func check_player_out_of_bounds():
@@ -126,6 +127,7 @@ func check_victory():
 			isTie = true
 
 func on_character_died(player_id):
+	# Run by server only
 	Server._player_data[player_id][PlayerData.Field.LIVES] -= 1
 	if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:
 		enqueue_player_spawn(player_id)
@@ -181,9 +183,9 @@ func _process(delta):
 	zoom.y = lerpf(zoom.y, to_zoom.y, delta * SPEED)
 
 
-func get_my_player():
+func get_my_player() -> Character:
 	for player in players_node.get_children():
-		if player.player_id == multiplayer.get_unique_id():
+		if player.is_multiplayer_authority():
 			return player
 	return null
 	
@@ -198,7 +200,7 @@ func set_to_position():
 	if my_player == null:
 		subject_position = resting_position
 	else:
-		subject_position = my_player.global_position
+		subject_position = my_player.get_character_global_position()
 	var screen_size = get_viewport_rect().size
 	var subject_to_mouse = (subject_position - mouse_position).limit_length((screen_size / 2).length())
 	to_position = subject_position - (subject_to_mouse / VIEW_DISTANCE)
@@ -300,11 +302,10 @@ position = Vector2(1150, 650)
 [node name="Players" type="Node" parent="." unique_id=415372532]
 
 [node name="WeaponSpawner" type="MultiplayerSpawner" parent="." unique_id=1190194600]
-_spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s")
 spawn_path = NodePath("../Weapons")
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2146464543]
-_spawnable_scenes = PackedStringArray("uid://b50v2k81sqp2d")
+_spawnable_scenes = PackedStringArray("uid://c2df8gkfh6o7m", "uid://eqwfwduh71qv")
 spawn_path = NodePath("../Players")
 
 [node name="Camera" type="Camera2D" parent="." unique_id=893467698]
