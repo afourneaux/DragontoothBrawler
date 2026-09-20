@@ -14,7 +14,8 @@ signal on_jump_pressed
 var lr_movement = 0
 
 func _ready():
-	set_process(is_multiplayer_authority())
+	set_process(false)
+	set_authority(get_parent().get_player_id())
 
 func _process(_delta):
 	lr_movement = 0
@@ -24,7 +25,10 @@ func _process(_delta):
 		lr_movement += 1
 	if Input.is_action_just_pressed(\"jump\"):
 		jump.rpc_id(1)
-	
+
+func set_authority(player_id):
+	set_multiplayer_authority(player_id)
+	set_process(player_id == multiplayer.get_unique_id())
 
 @rpc(\"call_local\")
 func jump():

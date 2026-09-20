@@ -47,9 +47,10 @@ func _physics_process(_delta):
 func _on_hit(body):
 	if multiplayer.is_server():
 		if body.is_in_group(\"Player\"):
-			if body.player_id == player_id:
+			var body_data: Character = body.get_parent()
+			if body_data.player_id == player_id:
 				return
-			body.health -= DAMAGE
+			body_data.health -= DAMAGE
 			body.velocity += Vector2(FORCE, 0).rotated(rotation)
 		queue_free()
 "

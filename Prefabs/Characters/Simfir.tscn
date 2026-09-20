@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://b50v2k81sqp2d" path="res://Prefabs/Components/CharacterComponents/_Shared/CharacterBase.tscn" id="1_r7les"]
 [ext_resource type="PackedScene" uid="uid://bg2arhwkkgmqp" path="res://Prefabs/Components/CharacterComponents/Simfir/spellblast.tscn" id="3_qa14a"]
-[ext_resource type="PackedScene" uid="uid://bo84muemnq4jy" path="res://Prefabs/Components/HealthBarComponent.tscn" id="3_r7les"]
 
 [sub_resource type="GDScript" id="GDScript_umbvu"]
 script/source = "extends Character
@@ -10,7 +9,7 @@ script/source = "extends Character
 func _init():
 	character_id = CharacterStats.Character.SIMFIR
 
-static func get_max_heath(): return 50
+func get_max_heath(): return 50
 "
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_r7les"]
@@ -20,13 +19,15 @@ properties/0/replication_mode = 2
 properties/1/path = NodePath(".:health")
 properties/1/spawn = false
 properties/1/replication_mode = 2
+properties/2/path = NodePath(".:position")
+properties/2/spawn = true
+properties/2/replication_mode = 1
 
 [node name="Simfir" type="Node2D" unique_id=1432910732]
+texture_filter = 1
 script = SubResource("GDScript_umbvu")
 
 [node name="Character" parent="." unique_id=1035501638 instance=ExtResource("1_r7les")]
-
-[node name="HealthBar" parent="." unique_id=264810046 instance=ExtResource("3_r7les")]
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=480149007]
 replication_config = SubResource("SceneReplicationConfig_r7les")

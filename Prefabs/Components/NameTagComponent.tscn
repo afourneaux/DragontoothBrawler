@@ -8,7 +8,7 @@ script/source = "extends Label
 
 
 func _ready():
-	text = Server._player_data[get_multiplayer_authority()][PlayerData.Field.NAME]
+	text = Server._player_data[get_parent().get_player_id()][PlayerData.Field.NAME]
 "
 
 [node name="Name" type="Label" unique_id=1744899980]

@@ -11,6 +11,12 @@ func _enter_tree():
 	bg_node.name = "BGMusicPlayer"
 	add_child(bg_node)
 
+func _ready():
+	#DEBUG
+	var args = OS.get_cmdline_args()
+	if args.has("--mute"):
+		mute()
+
 func _process(_delta):
 	for node in tracked_nodes:
 		if !tracked_nodes[node].node.is_playing():

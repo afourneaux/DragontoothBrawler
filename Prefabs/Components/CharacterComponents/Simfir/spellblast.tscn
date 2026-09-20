@@ -4,7 +4,7 @@
 
 [sub_resource type="GDScript" id="GDScript_ipx5j"]
 resource_name = "Spellblast"
-script/source = "extends Node2D
+script/source = "extends Weapon
 
 @export var input: WeaponInput
 
@@ -16,6 +16,7 @@ const SPAWN_DISTANCE = 10
 var cooldown_timer = 0
 
 func _ready():
+	super._ready()
 	assert(input != null)
 	input.on_attack_down.connect(fire)
 
@@ -24,26 +25,45 @@ func _process(delta):
 	if cooldown_timer >= 0:
 		cooldown_timer -= delta
 
-func fire():
+func fire(mouse_position, charge_amount):
 	# TODO: Hold to charge, release to fire blast
+	assert(multiplayer.is_server())
 	if cooldown_timer >= 0:
 		return
 	cooldown_timer = COOLDOWN
 	var orb = orb_prefab.instantiate()
-	var mouse_normal = (input.mouse_position - global_position).normalized()
-	orb.position = global_position + mouse_normal * SPAWN_DISTANCE
+	var character_position = parent.get_character_global_position()
+	var mouse_normal = (mouse_position - character_position).normalized()
+	orb.position = character_position + mouse_normal * SPAWN_DISTANCE
 	orb.rotation = mouse_normal.angle()
-	orb.player_id = get_parent().player_id
-	get_parent().weapons_node.add_child(orb, true)
+	orb.player_id = parent.player_id
+	orb.charge = charge_amount
+	parent.get_weapons_node().add_child(orb, true)
 "
 
 [sub_resource type="GDScript" id="GDScript_guodv"]
 script/source = "extends WeaponInput
 
 signal on_attack_down
+
+var is_mouse_down = false
+
+# TODO hold and charge
+func _process(_delta):
+	super._process(_delta)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and is_mouse_down == false:
+		if !is_mouse_down:
+			attack.rpc_id(1, mouse_position, 0)
+		is_mouse_down = true
+	else:
+		is_mouse_down = false
+
+@rpc(\"call_local\", \"any_peer\")
+func attack(client_mouse_position, charge_value):
+	on_attack_down.emit(client_mouse_position, charge_value)
 "
 
-[node name="Spellblast" type="Node2D" unique_id=2080712345 node_paths=PackedStringArray("input")]
+[node name="Spellblast" type="Node" unique_id=1897149226 node_paths=PackedStringArray("input")]
 script = SubResource("GDScript_ipx5j")
 input = NodePath("Input")
 

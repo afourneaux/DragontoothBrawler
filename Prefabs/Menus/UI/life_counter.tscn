@@ -24,6 +24,7 @@ func _ready():
 	$Name.text = Server._player_data[player_id][PlayerData.Field.NAME]
 	$Image.texture = CharacterStats.get_character_portrait(Server._player_data[player_id][PlayerData.Field.CHARACTER])
 	current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
+	$Lives.text = str(current_lives)
 	base_pos_x = position.x
 	base_pos_y = position.y
 
@@ -45,7 +46,7 @@ func _process(delta):
 "
 
 [node name="LifeCounter" type="Control" unique_id=100152605]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(200, 200)
 layout_mode = 3
 anchors_preset = 0
 script = SubResource("GDScript_1baup")
@@ -57,10 +58,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -40.0
-offset_top = -40.0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("1_jw61m")
@@ -71,10 +72,12 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -19.0
+offset_top = -40.0
+offset_bottom = 16.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_ap21v")
+theme_override_font_sizes/font_size = 48
 text = "NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -86,7 +89,7 @@ anchor_right = 1.0
 offset_bottom = 19.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("2_ap21v")
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 64
 text = "##"
 horizontal_alignment = 1
 vertical_alignment = 1

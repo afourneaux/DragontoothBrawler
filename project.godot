@@ -28,7 +28,6 @@ Server="*res://Scripts/Server.gd"
 PlayerData="*res://Scripts/PlayerData.gd"
 Audio="*res://Scripts/Audio.gd"
 CharacterStats="*res://Scripts/Data/CharacterStats.gd"
-WeaponStats="*res://Scripts/Data/WeaponStats.gd"
 
 [display]
 

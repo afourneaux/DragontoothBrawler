@@ -56,3 +56,28 @@ const CHARACTER_STATS = {
 		StatField.NAME: "Simfir"
 	}
 }
+
+
+const character_scenes = {
+	Character.NONE: null,
+	Character.ASH: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.BAYLIE: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.EIRE: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.ETIENNE: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.GALINA: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.LEDDID: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.SAYARAT: preload("res://Prefabs/Characters/Eire.tscn"),
+	Character.SIMFIR: preload("res://Prefabs/Characters/Simfir.tscn")
+}
+
+func factory_create(
+		character_id: int,
+		player_id: int,
+		spawn_position: Vector2,
+		on_character_died: Callable
+	) -> Character:
+	var character: Character = character_scenes[character_id].instantiate()
+	character.position = spawn_position
+	character.on_death.connect(on_character_died)
+	character.player_id = player_id
+	return character

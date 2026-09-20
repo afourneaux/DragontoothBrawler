@@ -30,6 +30,9 @@ func _ready():
 			enqueue_player_spawn(player_id, false)
 	setup_ui()
 
+func get_weapons_node():
+	return $Weapons
+
 func back_to_menu():
 	Server.on_data_changed.disconnect(back_to_menu)
 	var scene = load(\"res://Prefabs/Menus/MenuRoot.tscn\").instantiate()
@@ -87,25 +90,22 @@ func spawn_enqueued_players(delta):
 		player_spawn_queue.erase(player_id)
 
 func spawn_player(player_id):
-	if not multiplayer.is_server():
-		push_error(\"spawn_player called from client\")
+	assert(multiplayer.is_server(), \"spawn_player is serverside only\")
 	var spawner = get_spawner()
 	var spawn_position = $Level/Spawners.get_child(spawner).position
 	var character_id = Server._player_data[player_id][PlayerData.Field.CHARACTER]
-	var character = Character.factory_create(
+	var character = CharacterStats.factory_create(
 		character_id,
 		player_id,
 		spawn_position,
-		on_character_died,
-		$Weapons
+		on_character_died
 	)
 	$Players.add_child(character, true)
 
 func check_player_out_of_bounds():
-	if not multiplayer.is_server():
-		push_error(\"check_player_out_of_bounds called from client\")
+	assert(multiplayer.is_server())
 	for player in $Players.get_children():
-		if player.position.y > $Level/LevelBounds.position.y:
+		if player.get_character_level_position().y > $Level/LevelBounds.position.y:
 			player.die()
 
 func check_victory():
@@ -143,6 +143,13 @@ func enqueue_player_spawn(player_id, on_delay=true):
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]
 size = Vector2(16, 16)
 
+[sub_resource type="GDScript" id="GDScript_vgcuc"]
+script/source = "extends Node
+
+func get_weapons_node():
+	return get_parent().get_weapons_node()
+"
+
 [sub_resource type="GDScript" id="GDScript_d1d7t"]
 resource_name = "Camera"
 script/source = "extends Camera2D
@@ -170,8 +177,8 @@ func _ready():
 	zoom = RESTING_ZOOM
 	limit_top = -LEVEL_VIEW_BUFFER
 	limit_left = -LEVEL_VIEW_BUFFER
-	limit_right = level_size.x + LEVEL_VIEW_BUFFER
-	limit_bottom = level_size.y + LEVEL_VIEW_BUFFER
+	limit_right = int(level_size.x) + LEVEL_VIEW_BUFFER
+	limit_bottom = int(level_size.y) + LEVEL_VIEW_BUFFER
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -185,7 +192,7 @@ func _process(delta):
 
 func get_my_player() -> Character:
 	for player in players_node.get_children():
-		if player.is_multiplayer_authority():
+		if player.player_id == multiplayer.get_unique_id():
 			return player
 	return null
 	
@@ -245,6 +252,7 @@ position = Vector2(824, 353)
 position = Vector2(322, 239)
 
 [node name="LevelBlocks" type="Node2D" parent="Level" unique_id=1768666689]
+texture_filter = 1
 
 [node name="StaticBody2D" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=297011958]
 position = Vector2(324, 568)
@@ -300,12 +308,14 @@ position = Vector2(1150, 650)
 [node name="Weapons" type="Node" parent="." unique_id=718512317]
 
 [node name="Players" type="Node" parent="." unique_id=415372532]
+script = SubResource("GDScript_vgcuc")
 
 [node name="WeaponSpawner" type="MultiplayerSpawner" parent="." unique_id=1190194600]
+_spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s")
 spawn_path = NodePath("../Weapons")
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2146464543]
-_spawnable_scenes = PackedStringArray("uid://c2df8gkfh6o7m", "uid://eqwfwduh71qv")
+_spawnable_scenes = PackedStringArray("uid://c2df8gkfh6o7m", "uid://b1br5er30d2pv")
 spawn_path = NodePath("../Players")
 
 [node name="Camera" type="Camera2D" parent="." unique_id=893467698]
@@ -316,6 +326,7 @@ script = SubResource("GDScript_d1d7t")
 [node name="UI" type="CanvasLayer" parent="." unique_id=897887713]
 
 [node name="Lives" type="HBoxContainer" parent="UI" unique_id=1475615278]
+texture_filter = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
