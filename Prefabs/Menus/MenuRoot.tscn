@@ -2,8 +2,7 @@
 
 [ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="1_t3m4n"]
 [ext_resource type="Texture2D" uid="uid://blu2rcswgr432" path="res://Assets/Sprites/Spiral_Staircase_logo.png" id="2_ji87e"]
-[ext_resource type="Texture2D" uid="uid://dmk8t6fk2cu2p" path="res://Assets/Sprites/UI/audioOn.png" id="3_p1bw4"]
-[ext_resource type="Texture2D" uid="uid://dui1a12ltbopm" path="res://Assets/Sprites/UI/audioOff.png" id="4_t1sad"]
+[ext_resource type="PackedScene" uid="uid://ybi6d8072haf" path="res://Prefabs/Menus/UI/mute.tscn" id="3_oqnup"]
 
 [sub_resource type="GDScript" id="GDScript_ud6xk"]
 script/source = "extends Control
@@ -34,15 +33,8 @@ func _start_multiplayer(player_name):
 	_init_character_select_menu()
 
 func _init_character_select_menu():
-	_clear_old_menu()
 	var scene = load(\"res://Prefabs/Menus/CharacterSelectMenu.tscn\").instantiate()
-	scene.on_start_game.connect(start_game)
-	$ActiveMenu.add_child(scene)
-
-func start_game():
-	var game_scene = load(\"res://Prefabs/GameRoot.tscn\").instantiate()
-	get_tree().root.add_child(game_scene, true)
-	queue_free()
+	get_tree().change_scene_to_node(scene)
 
 
 func _on_mute_btn_toggled(toggled_on):
@@ -85,21 +77,9 @@ texture = ExtResource("2_ji87e")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Mute" type="TextureButton" parent="." unique_id=194949877]
+[node name="Mute" parent="." unique_id=1356069239 instance=ExtResource("3_oqnup")]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -55.0
-offset_right = -5.0
-offset_bottom = 50.0
-grow_horizontal = 0
-toggle_mode = true
-texture_normal = ExtResource("3_p1bw4")
-texture_pressed = ExtResource("4_t1sad")
-ignore_texture_size = true
-stretch_mode = 0
+offset_left = -50.0
+offset_right = 0.0
 
 [node name="ActiveMenu" type="Node" parent="." unique_id=1041959998]
-
-[connection signal="toggled" from="Mute" to="." method="_on_mute_btn_toggled"]

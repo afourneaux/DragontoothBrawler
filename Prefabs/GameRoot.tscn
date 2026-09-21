@@ -1,32 +1,36 @@
 [gd_scene format=3 uid="uid://b3lmfcik1cwwm"]
 
 [ext_resource type="Texture2D" uid="uid://dtxla57etuy1j" path="res://Assets/Sprites/invalid.bmp" id="1_2f75f"]
+[ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="2_1baup"]
+[ext_resource type="Texture2D" uid="uid://cgk4syhbk7bha" path="res://Assets/Sprites/blank.bmp" id="3_3r4uy"]
 
 [sub_resource type="GDScript" id="GDScript_yc5rg"]
 resource_name = "Game"
 script/source = "extends Node
 
 const life_counter_scene = preload(\"res://Prefabs/Menus/UI/life_counter.tscn\")
-
+const battle_music = preload(\"res://Assets/Audio/battle_theme.wav\")
 
 var spawner_timers = []
 var life_counters = {}
 const SPAWNER_REFRESH_TIME = 10
-var player_spawn_queue = {}
+const ENDGAME_TIMER_MAX = 5
 const LIVES = 3
+var player_spawn_queue = {}
+var endgame_timer = 0
+var is_endgame: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	Server.on_data_changed.connect(back_to_menu)
-	var music = load(\"res://Assets/Audio/battle_theme.wav\")
-	Audio.play_bg_music(music)
+	multiplayer.peer_disconnected.connect(back_to_menu)
+	$UI/Endgame.on_return_to_menu.connect(return_to_character_select)
+	Audio.play_bg_music(battle_music)
 	for player_id in Server._player_data:
 		Server._player_data[player_id][PlayerData.Field.LIVES] = LIVES
 	if multiplayer.is_server():
 		for spawner in range($Level/Spawners.get_child_count()):
 			spawner_timers.append(0)
 		for player_id in Server._player_data:
-			Server._player_data[player_id][PlayerData.Field.LIVES] = LIVES
 			enqueue_player_spawn(player_id, false)
 	setup_ui()
 
@@ -34,12 +38,9 @@ func get_weapons_node():
 	return $Weapons
 
 func back_to_menu():
-	Server.on_data_changed.disconnect(back_to_menu)
-	var scene = load(\"res://Prefabs/Menus/MenuRoot.tscn\").instantiate()
 	Server.disconnect_peer()
 	PlayerData.reset()
-	get_tree().root.add_child(scene)
-	queue_free()
+	get_tree().change_scene_to_file(\"res://Prefabs/Menus/MenuRoot.tscn\")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -109,27 +110,22 @@ func check_player_out_of_bounds():
 			player.die()
 
 func check_victory():
-	if not multiplayer.is_server():
-		push_error(\"check_victory called from client\")
+	assert(multiplayer.is_server())
+	var remaining_players = []
 	for player_id in Server._player_data:
-		var remaining_players = []
 		if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:
 			remaining_players.append(player_id)
-		var isTie = false
-		var isWin = false
-		var victor = null
+	if len(remaining_players) <= 1:
+		var winner = 0
 		if len(remaining_players) == 1:
-			# TODO Set victory
-			victor = remaining_players[0]
-			isWin = true
-		if remaining_players.is_empty():
-			isWin = true
-			isTie = true
+			winner = remaining_players[0]
+		start_endgame.rpc(winner)
 
 func on_character_died(player_id):
-	# Run by server only
-	Server._player_data[player_id][PlayerData.Field.LIVES] -= 1
-	if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:
+	assert(multiplayer.is_server())
+	var current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
+	Server.set_value(player_id, PlayerData.Field.LIVES, current_lives - 1)
+	if current_lives - 1 > 0:
 		enqueue_player_spawn(player_id)
 
 func enqueue_player_spawn(player_id, on_delay=true):
@@ -138,6 +134,27 @@ func enqueue_player_spawn(player_id, on_delay=true):
 	if player_spawn_queue.has(player_id):
 		push_error(\"enqueue_player_spawn called, but player is already in queue\")
 	player_spawn_queue[player_id] = 0 if on_delay else Globals.PLAYER_SPAWN_DELAY
+
+@rpc(\"authority\", \"call_local\", \"reliable\")
+func start_endgame(winner):
+	get_tree().paused = true
+	var winner_name: String
+	var winner_portrait: Texture
+	if winner == 0:
+		winner_name = \"\"
+		winner_portrait = null
+	else:
+		winner_name = Server._player_data[winner][PlayerData.Field.NAME]
+		winner_portrait = CharacterStats.get_character_portrait(Server._player_data[winner][PlayerData.Field.CHARACTER])
+	$UI/Endgame.activate(winner_name, winner_portrait)
+
+func return_to_character_select():
+	rpc_return_to_character_select.rpc()
+
+@rpc(\"any_peer\", \"reliable\", \"call_local\")
+func rpc_return_to_character_select():
+	get_tree().paused = false
+	get_tree().change_scene_to_file(\"res://Prefabs/Menus/CharacterSelectMenu.tscn\")
 "
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2gbds"]
@@ -218,6 +235,25 @@ func set_to_position():
 	var zoom_factor_y = abs(subject_to_mouse.y) / resting_position.y
 	var zoom_factor = BASE_ZOOM_LEVEL - clamp((zoom_factor_x + zoom_factor_y) / 10, 0, 0.2)
 	to_zoom = base_zoom * Vector2(zoom_factor, zoom_factor)
+"
+
+[sub_resource type="GDScript" id="GDScript_3r4uy"]
+script/source = "extends Panel
+
+signal on_return_to_menu
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+func activate(winner_name, winner_character_sprite):
+	$Victor.text = \"Winner: %s!\" % winner_name
+	$Portrait.texture = winner_character_sprite
+	$MenuButton/Label.text = \"Continue\"
+	show()
+
+func return_to_menu():
+	on_return_to_menu.emit()
 "
 
 [node name="GameRoot" type="Node" unique_id=1679803556]
@@ -338,3 +374,77 @@ offset_right = 50.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 40
+
+[node name="Endgame" type="Panel" parent="UI" unique_id=1736113984]
+visible = false
+texture_filter = 1
+custom_minimum_size = Vector2(1500, 600)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = SubResource("GDScript_3r4uy")
+
+[node name="Victor" type="Label" parent="UI/Endgame" unique_id=639878010]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_1baup")
+theme_override_font_sizes/font_size = 120
+text = "TEXT_VICTORY"
+horizontal_alignment = 1
+
+[node name="Portrait" type="TextureRect" parent="UI/Endgame" unique_id=2111903787]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_2f75f")
+
+[node name="MenuButton" type="TextureButton" parent="UI/Endgame" unique_id=677546115]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -100.0
+grow_horizontal = 0
+grow_vertical = 0
+texture_normal = ExtResource("1_2f75f")
+texture_pressed = ExtResource("3_3r4uy")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="UI/Endgame/MenuButton" unique_id=1547203065]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_1baup")
+theme_override_font_sizes/font_size = 28
+text = "TEXT_TO_MENU"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="button_up" from="UI/Endgame/MenuButton" to="UI/Endgame" method="return_to_menu"]

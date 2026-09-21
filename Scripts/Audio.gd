@@ -12,6 +12,7 @@ func _enter_tree():
 	add_child(bg_node)
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	#DEBUG
 	var args = OS.get_cmdline_args()
 	if args.has("--mute"):

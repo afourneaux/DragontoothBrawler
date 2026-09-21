@@ -2,7 +2,7 @@ extends Node
 
 signal on_data_changed
 
-var peer
+var peer: ENetMultiplayerPeer
 
 var _player_data = {}:
 	set(value):
@@ -10,6 +10,12 @@ var _player_data = {}:
 		on_data_changed.emit()
 		if multiplayer.is_server():
 			_send_data_to_clients.rpc(_player_data)
+
+func set_value(player_id: int, field: PlayerData.Field, value):
+	_player_data[player_id][field] = value
+	on_data_changed.emit()
+	if multiplayer.is_server():
+		_send_data_to_clients.rpc(_player_data)
 
 func _ready():
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)

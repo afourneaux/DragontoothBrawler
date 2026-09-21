@@ -2,6 +2,7 @@
 
 [ext_resource type="FontFile" uid="uid://lf13dwkcg2gj" path="res://Assets/Fonts/Germania_One/GermaniaOne-Regular.ttf" id="1_2rumt"]
 [ext_resource type="FontFile" uid="uid://u5fypg25wh0b" path="res://Assets/Fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="2_5enw6"]
+[ext_resource type="PackedScene" uid="uid://ybi6d8072haf" path="res://Prefabs/Menus/UI/mute.tscn" id="3_hfe3a"]
 
 [sub_resource type="GDScript" id="GDScript_l1sv3"]
 resource_name = "CharacterSelectMenu"
@@ -39,6 +40,7 @@ func _ready():
 		character_instance._on_pressed.connect(_on_character_pressed) 
 		$CharacterList.add_child(character_instance)
 		character_panels[character] = character_instance
+	PlayerData.is_ready = false
 	_update_player_data()
 
 func _process(delta):
@@ -109,7 +111,8 @@ func stop_countdown():
 
 @rpc(\"authority\", \"reliable\", \"call_local\")
 func start_game():
-	on_start_game.emit()
+	var game_scene = load(\"res://Prefabs/GameRoot.tscn\").instantiate()
+	get_tree().change_scene_to_node(game_scene)
 "
 
 [node name="CharacterSelectMenu" type="Control" unique_id=1372507192]
@@ -215,6 +218,9 @@ theme_override_font_sizes/font_size = 150
 text = "X"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Mute" parent="." unique_id=1356069239 instance=ExtResource("3_hfe3a")]
+layout_mode = 1
 
 [connection signal="toggled" from="Button_Ready" to="." method="_on_button_toggled"]
 [connection signal="pressed" from="Button_Clear" to="." method="_on_button_clear_pressed"]

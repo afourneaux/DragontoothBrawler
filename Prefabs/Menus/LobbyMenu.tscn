@@ -11,6 +11,8 @@ signal _on_join
 const DEFAULT_PORT = 28596
 const TIMEOUT_OVERRIDE = 5
 
+const lobby_music = preload(\"res://Assets/Audio/Menus/MainMenu.wav\")
+
 var _current_timeout_count = 0
 var _connection_status = 0
 
@@ -27,9 +29,7 @@ func _ready():
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_connection_failed)
 	multiplayer.connected_to_server.connect(_on_connection_success)
-	var music = load(\"res://Assets/Audio/Menus/MainMenu.wav\")
-	if music != null:
-		Audio.play_bg_music(music)
+	Audio.play_bg_music(lobby_music)
 	
 
 func _process(delta):

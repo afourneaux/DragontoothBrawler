@@ -18,6 +18,8 @@ var base_pos_y = -1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	base_pos_x = $Image.position.x
+	base_pos_y = $Image.position.y
 	if player_id == -1:
 		push_error(\"LifeCounter - No player_id provided\")
 		queue_free()
@@ -25,10 +27,17 @@ func _ready():
 	$Image.texture = CharacterStats.get_character_portrait(Server._player_data[player_id][PlayerData.Field.CHARACTER])
 	current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
 	$Lives.text = str(current_lives)
-	base_pos_x = position.x
-	base_pos_y = position.y
+	Server.on_data_changed.connect(check_life_lost)
 
 func _process(delta):
+	if animation_timer > 0:
+		animation_timer -= delta
+		var modulation = animation_timer / Globals.PLAYER_SPAWN_DELAY
+		$Image.modulate = current_colour - Color(0, modulation, modulation, 0)
+		$Image.position.x = base_pos_x + ((randf() - 0.5) * SHAKE_RANGE * modulation)
+		$Image.position.y = base_pos_y + ((randf() - 0.5) * SHAKE_RANGE * modulation)
+
+func check_life_lost():
 	if current_lives != Server._player_data[player_id][PlayerData.Field.LIVES]:
 		current_lives = Server._player_data[player_id][PlayerData.Field.LIVES]
 		if current_lives <= 0:
@@ -37,12 +46,6 @@ func _process(delta):
 		else:
 			$Lives.text = str(current_lives)
 		animation_timer = Globals.PLAYER_SPAWN_DELAY
-	if animation_timer > 0:
-		animation_timer -= delta
-		var modulation = animation_timer / Globals.PLAYER_SPAWN_DELAY
-		$Image.modulate = current_colour - Color(0, modulation, modulation, 0)
-		position.x = base_pos_x + ((randf() - 0.5) * SHAKE_RANGE * modulation)
-		position.y = base_pos_y + ((randf() - 0.5) * SHAKE_RANGE * modulation)
 "
 
 [node name="LifeCounter" type="Control" unique_id=100152605]

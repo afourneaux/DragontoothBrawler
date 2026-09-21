@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://ybi6d8072haf"]
+
+[ext_resource type="Texture2D" uid="uid://dmk8t6fk2cu2p" path="res://Assets/Sprites/UI/audioOn.png" id="1_1ckw6"]
+[ext_resource type="Texture2D" uid="uid://dui1a12ltbopm" path="res://Assets/Sprites/UI/audioOff.png" id="2_fwjtm"]
+
+[sub_resource type="GDScript" id="GDScript_xnko0"]
+script/source = "extends TextureButton
+
+func _on_toggled(toggled_on):
+	if toggled_on:
+		Audio.mute()
+	else:
+		Audio.unmute()
+"
+
+[node name="Mute" type="TextureButton" unique_id=1356069239]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -50.0
+offset_bottom = 50.0
+grow_horizontal = 0
+toggle_mode = true
+texture_normal = ExtResource("1_1ckw6")
+texture_pressed = ExtResource("2_fwjtm")
+ignore_texture_size = true
+stretch_mode = 0
+script = SubResource("GDScript_xnko0")
+
+[connection signal="toggled" from="." to="." method="_on_toggled"]
