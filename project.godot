@@ -19,7 +19,7 @@ run/main_scene="res://Prefabs/Menus/MenuRoot.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 boot_splash/bg_color=Color(0.141176, 0.141176, 0.141176, 1)
 boot_splash/image="res://Assets/Sprites/Spiral_Staircase_logo.png"
-config/icon="res://icon.svg"
+config/icon="uid://gxxo2sygtccw"
 
 [autoload]
 

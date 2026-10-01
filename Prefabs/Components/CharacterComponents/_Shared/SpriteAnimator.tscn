@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://dw4jqehssooxn"]
+
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_yf7wc"]
+
+[sub_resource type="GDScript" id="GDScript_pq3a6"]
+script/source = "extends AnimatedSprite2D
+
+signal on_animation_state_change
+
+var is_animation_state_set_this_frame = false
+
+const STAND_TOLERANCE = 10
+
+var parent: CharacterBody2D
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	# TODO programatically get the right character's animations
+	parent = get_parent()
+
+
+func _process(_delta):
+	is_animation_state_set_this_frame = false
+	if parent.is_on_wall_only():
+		_set_animation_state(Globals.ANIMATION_STATE.WALLGRAB)
+	elif parent.is_on_floor():
+		if abs(parent.velocity.x) < STAND_TOLERANCE:
+			_set_animation_state(Globals.ANIMATION_STATE.STAND)
+		elif parent.input.lr_movement != 0:
+			_set_animation_state(Globals.ANIMATION_STATE.WALK)
+	elif parent.velocity.y > 0:
+			_set_animation_state(Globals.ANIMATION_STATE.FALL)
+	elif parent.velocity.y < 0:
+			_set_animation_state(Globals.ANIMATION_STATE.JUMP)
+	
+	if parent.velocity.x > 0:
+		flip_h = false
+	elif parent.velocity.x < 0:
+		flip_h = true
+
+func _set_animation_state(animation_state, force=false):
+	if is_animation_state_set_this_frame and not force:
+		return
+	on_animation_state_change.emit(animation_state)
+	is_animation_state_set_this_frame = true
+	
+	#DEBUG
+	animation = \"stand\"
+	return
+	match animation_state:
+		Globals.ANIMATION_STATE.STAND:
+			animation = \"stand\"
+		Globals.ANIMATION_STATE.JUMP:
+			animation = \"jump\"
+		Globals.ANIMATION_STATE.STAND:
+			animation = \"stand\"
+		Globals.ANIMATION_STATE.WALLGRAB:
+			animation = \"wallgrab\"
+		Globals.ANIMATION_STATE.FALL:
+			animation = \"fall\"
+		Globals.ANIMATION_STATE.WALK:
+			animation = \"walk\"
+		Globals.ANIMATION_STATE.NONE:
+			push_error(\"Animation state NONE provided\")
+		_:
+			push_error(\"Unrecognised animation state: %s\" % str(animation_state))
+"
+
+[node name="SpriteAnimator" type="AnimatedSprite2D" unique_id=694403850]
+scale = Vector2(2, 2)
+sprite_frames = ExtResource("1_yf7wc")
+animation = &"stand"
+script = SubResource("GDScript_pq3a6")

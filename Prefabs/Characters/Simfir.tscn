@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://b1br5er30d2pv"]
+[gd_scene format=3 uid="uid://b2tplq65vovvt"]
 
 [ext_resource type="PackedScene" uid="uid://b50v2k81sqp2d" path="res://Prefabs/Components/CharacterComponents/_Shared/CharacterBase.tscn" id="1_r7les"]
 [ext_resource type="PackedScene" uid="uid://bg2arhwkkgmqp" path="res://Prefabs/Components/CharacterComponents/Simfir/spellblast.tscn" id="3_qa14a"]

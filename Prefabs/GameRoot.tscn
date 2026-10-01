@@ -111,6 +111,8 @@ func check_player_out_of_bounds():
 
 func check_victory():
 	assert(multiplayer.is_server())
+	if Globals.DEBUG_BLOCK_VICTORY:
+		return
 	var remaining_players = []
 	for player_id in Server._player_data:
 		if Server._player_data[player_id][PlayerData.Field.LIVES] > 0:

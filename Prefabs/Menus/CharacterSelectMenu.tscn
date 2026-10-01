@@ -8,8 +8,6 @@
 resource_name = "CharacterSelectMenu"
 script/source = "extends Control
 
-signal on_start_game
-
 var _character_package = preload(\"res://Prefabs/Menus/UI/character.tscn\")
 var _player_package = preload(\"res://Prefabs/Menus/UI/player.tscn\")
 
