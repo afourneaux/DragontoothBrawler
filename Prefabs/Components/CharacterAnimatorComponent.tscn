@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://crfuirdfdicw1"]
 
-[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_iqt6s"]
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/characters.tres" id="1_iqt6s"]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" unique_id=2129332166]
 scale = Vector2(1, 2)

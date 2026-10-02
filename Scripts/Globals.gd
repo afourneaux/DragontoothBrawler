@@ -14,6 +14,27 @@ const AUDIO_NOT_OWNED_VOLUME_FACTOR = 0.5
 
 # Animation
 enum ANIMATION_STATE {NONE, STAND, WALK, JUMP, ATTACK, FALL, WALLGRAB, HURT}
+func get_animation(animation_enum):
+	var animation = "none"
+	match animation_enum:
+		Globals.ANIMATION_STATE.STAND:
+			animation = "stand"
+		Globals.ANIMATION_STATE.JUMP:
+			animation = "jump"
+		Globals.ANIMATION_STATE.STAND:
+			animation = "stand"
+		Globals.ANIMATION_STATE.WALLGRAB:
+			animation = "wallgrab"
+		Globals.ANIMATION_STATE.FALL:
+			animation = "fall"
+		Globals.ANIMATION_STATE.WALK:
+			animation = "walk"
+		Globals.ANIMATION_STATE.NONE:
+			push_error("Animation state NONE provided")
+		_:
+			push_error("Unrecognised animation state: %s" % str(animation_enum))
+	return animation
+	
 
 const DEBUG_SINGLE_PLAYER = true
 const DEBUG_BLOCK_VICTORY = true

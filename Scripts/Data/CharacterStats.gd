@@ -13,61 +13,74 @@ enum Character {
 }
 enum StatField {
 	NONE,
-	NAME
+	DISPLAY_NAME,
+	DATA_NAME,
+	SCENE
 }
 
-func get_character_name(character):
-	return CHARACTER_STATS[character][StatField.NAME]
+func get_character_display_name(character):
+	return CHARACTER_STATS[character][StatField.DISPLAY_NAME]
+
+func get_character_data_name(character):
+	return CHARACTER_STATS[character][StatField.DATA_NAME]
+
+func get_character_scene(character):
+	return load(CHARACTER_STATS[character][StatField.SCENE])
 
 func get_character_portrait(character):
 	var portrait_package = null
 	if character != CharacterStats.Character.NONE:
-		portrait_package = load("res://Assets/Sprites/Portraits/%s.png" % CharacterStats.get_character_name(character))
+		portrait_package = load("res://Assets/Sprites/Portraits/%s.png" % CharacterStats.get_character_display_name(character))
 	if portrait_package == null:
 		portrait_package = load("res://Assets/Sprites/invalid.bmp")
 	return portrait_package
 
 const CHARACTER_STATS = {
 	Character.NONE: {
-		StatField.NAME: "==undefined name=="
+		StatField.DISPLAY_NAME: "==undefined name==",
+		StatField.DATA_NAME: "",
+		StatField.SCENE: null
 	},
 	Character.ASH: {
-		StatField.NAME: "Ash"
+		StatField.DISPLAY_NAME: "Ash",
+		StatField.DATA_NAME: "ash",
+		StatField.SCENE: "res://Prefabs/Characters/Ash.tscn"
 	},
 	Character.BAYLIE: {
-		StatField.NAME: "Baylie"
+		StatField.DISPLAY_NAME: "Baylie",
+		StatField.DATA_NAME: "baylie",
+		StatField.SCENE: "res://Prefabs/Characters/Baylie.tscn"
 	},
 	Character.EIRE: {
-		StatField.NAME: "Eire"
+		StatField.DISPLAY_NAME: "Eire",
+		StatField.DATA_NAME: "eire",
+		StatField.SCENE: "res://Prefabs/Characters/Eire.tscn"
 	},
 	Character.ETIENNE: {
-		StatField.NAME: "Étienne"
+		StatField.DISPLAY_NAME: "Étienne",
+		StatField.DATA_NAME: "etienne",
+		StatField.SCENE: "res://Prefabs/Characters/Etienne.tscn"
 	},
 	Character.GALINA: {
-		StatField.NAME: "Galina"
+		StatField.DISPLAY_NAME: "Galina",
+		StatField.DATA_NAME: "galina",
+		StatField.SCENE: "res://Prefabs/Characters/Galina.tscn"
 	},
 	Character.LEDDID: {
-		StatField.NAME: "Leddid"
+		StatField.DISPLAY_NAME: "Leddid",
+		StatField.DATA_NAME: "leddid",
+		StatField.SCENE: "res://Prefabs/Characters/Leddid.tscn"
 	},
 	Character.SAYARAT: {
-		StatField.NAME: "Sayarat"
+		StatField.DISPLAY_NAME: "Sayarat",
+		StatField.DATA_NAME: "sayarat",
+		StatField.SCENE: "res://Prefabs/Characters/Sayarat.tscn"
 	},
 	Character.SIMFIR: {
-		StatField.NAME: "Simfir"
+		StatField.DISPLAY_NAME: "Simfir",
+		StatField.DATA_NAME: "simfir",
+		StatField.SCENE: "res://Prefabs/Characters/Simfir.tscn"
 	}
-}
-
-
-const character_scenes = {
-	Character.NONE: null,
-	Character.ASH: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.BAYLIE: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.EIRE: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.ETIENNE: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.GALINA: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.LEDDID: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.SAYARAT: preload("res://Prefabs/Characters/Eire.tscn"),
-	Character.SIMFIR: preload("res://Prefabs/Characters/Simfir.tscn")
 }
 
 func factory_create(
@@ -76,7 +89,7 @@ func factory_create(
 		spawn_position: Vector2,
 		on_character_died: Callable
 	) -> Character:
-	var character: Character = character_scenes[character_id].instantiate()
+	var character: Character = get_character_scene(character_id).instantiate()
 	character.position = spawn_position
 	character.on_death.connect(on_character_died)
 	character.player_id = player_id

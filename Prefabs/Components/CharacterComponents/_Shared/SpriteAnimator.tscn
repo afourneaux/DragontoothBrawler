@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dw4jqehssooxn"]
 
-[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/debug_character.tres" id="1_yf7wc"]
+[ext_resource type="SpriteFrames" uid="uid://br601lpl4fjmw" path="res://Assets/Animations/characters.tres" id="1_yf7wc"]
 
 [sub_resource type="GDScript" id="GDScript_pq3a6"]
 script/source = "extends AnimatedSprite2D
@@ -15,7 +15,6 @@ var parent: CharacterBody2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	# TODO programatically get the right character's animations
 	parent = get_parent()
 
 
@@ -43,31 +42,15 @@ func _set_animation_state(animation_state, force=false):
 		return
 	on_animation_state_change.emit(animation_state)
 	is_animation_state_set_this_frame = true
-	
+	var animation_name = Globals.get_animation(animation_state)
 	#DEBUG
-	animation = \"stand\"
-	return
-	match animation_state:
-		Globals.ANIMATION_STATE.STAND:
-			animation = \"stand\"
-		Globals.ANIMATION_STATE.JUMP:
-			animation = \"jump\"
-		Globals.ANIMATION_STATE.STAND:
-			animation = \"stand\"
-		Globals.ANIMATION_STATE.WALLGRAB:
-			animation = \"wallgrab\"
-		Globals.ANIMATION_STATE.FALL:
-			animation = \"fall\"
-		Globals.ANIMATION_STATE.WALK:
-			animation = \"walk\"
-		Globals.ANIMATION_STATE.NONE:
-			push_error(\"Animation state NONE provided\")
-		_:
-			push_error(\"Unrecognised animation state: %s\" % str(animation_state))
+	animation_name = \"stand\"
+	var character = CharacterStats.get_character_data_name(parent.get_character_id())
+	animation = \"%s_%s\" % [character, animation_name]
 "
 
 [node name="SpriteAnimator" type="AnimatedSprite2D" unique_id=694403850]
 scale = Vector2(2, 2)
 sprite_frames = ExtResource("1_yf7wc")
-animation = &"stand"
+animation = &"baylie_attack"
 script = SubResource("GDScript_pq3a6")
