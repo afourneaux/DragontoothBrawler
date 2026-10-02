@@ -106,7 +106,7 @@ func spawn_player(player_id):
 func check_player_out_of_bounds():
 	assert(multiplayer.is_server())
 	for player in $Players.get_children():
-		if player.get_character_level_position().y > $Level/LevelBounds.position.y:
+		if player.get_character_node().position.y > $Level/LevelBounds.position.y:
 			player.die()
 
 func check_victory():
@@ -226,7 +226,7 @@ func set_to_position():
 	if my_player == null:
 		subject_position = resting_position
 	else:
-		subject_position = my_player.get_character_global_position()
+		subject_position = my_player.get_character_node().global_position
 	var screen_size = get_viewport_rect().size
 	var subject_to_mouse = (subject_position - mouse_position).limit_length((screen_size / 2).length())
 	to_position = subject_position - (subject_to_mouse / VIEW_DISTANCE)

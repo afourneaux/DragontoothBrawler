@@ -30,7 +30,7 @@ func fire(mouse_position, charge_amount):
 		return
 	cooldown_timer = COOLDOWN
 	var orb = orb_prefab.instantiate()
-	var character_position = parent.get_character_global_position()
+	var character_position = parent.get_character_node().global_position
 	var mouse_normal = (mouse_position - character_position).normalized()
 	orb.position = character_position + mouse_normal * SPAWN_DISTANCE
 	orb.rotation = mouse_normal.angle()

@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://dxt50u12o4exj"]
+
+[sub_resource type="GDScript" id="GDScript_l4e75"]
+script/source = "extends Weapon
+
+var character_node: CharacterBody2D
+
+const COOLDOWN = 1
+var cooldown_timer = COOLDOWN
+const START_BUFFER = 0.2
+const FORCE = 1500
+const TERMINAL_VELOCITY = 200
+const FLOATY_FACTOR = 0.1
+var is_mouse_down = false
+var is_active = false
+var is_descending = false
+
+func _ready():
+	super._ready()
+	parent.on_hurt.connect(reset)
+	character_node = parent.get_character_node()
+
+func _process(delta):
+	cooldown_timer -= delta
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		activate.rpc_id(1)
+		is_mouse_down = true
+	else:
+		is_mouse_down = false
+	if multiplayer.is_server() and is_active:
+		if character_node.velocity.y > TERMINAL_VELOCITY:
+			character_node.velocity.y = TERMINAL_VELOCITY
+		# Detect apex
+		if !is_descending and character_node.velocity.y >= 0:
+			parent.floaty_factor = FLOATY_FACTOR
+			is_descending = true
+		# Detect landing
+		if COOLDOWN - cooldown_timer > START_BUFFER and (
+			character_node.is_on_wall() or 
+			character_node.is_on_floor()
+			):
+				reset()
+
+func reset(_hp=null):
+	assert(multiplayer.is_server())
+	parent.floaty_factor = 1
+	is_active = false
+	is_descending = false
+	cooldown_timer = COOLDOWN
+
+@rpc(\"any_peer\", \"call_local\", \"unreliable\")
+func activate():
+	assert(multiplayer.is_server())
+	if is_active or cooldown_timer >= 0:
+		return
+	is_active = true
+	cooldown_timer = COOLDOWN
+	character_node.velocity.y = -FORCE
+"
+
+[node name="FeatherFall" type="Node" unique_id=2143988421]
+script = SubResource("GDScript_l4e75")

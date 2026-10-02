@@ -4,6 +4,8 @@ class_name Character
 
 signal on_death
 signal on_health_changed
+signal on_hurt
+signal on_gravity_changed
 
 var weapons_node: Node
 @export var player_id: int = -1
@@ -22,8 +24,11 @@ func get_max_health(): return 100
 		var new_health = clamp(value, 0, get_max_health())
 		if new_health == health:
 			return
+		var difference = health - new_health
 		health = new_health
 		on_health_changed.emit(new_health)
+		if difference < 0:
+			on_hurt.emit()
 
 func _ready():
 	assert(character_id != CharacterStats.Character.NONE)
@@ -42,8 +47,5 @@ func die():
 	on_death.emit(player_id)
 	queue_free()
 
-func get_character_global_position():
-	return $Character.global_position
-
-func get_character_level_position():
-	return $Character.position
+func get_character_node() -> CharacterBody2D:
+	return $Character

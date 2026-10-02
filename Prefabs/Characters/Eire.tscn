@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://b50v2k81sqp2d" path="res://Prefabs/Components/CharacterComponents/_Shared/CharacterBase.tscn" id="1_pq3a6"]
 [ext_resource type="PackedScene" uid="uid://deu56pwrm8afg" path="res://Prefabs/Components/CharacterComponents/Eire/crossbow.tscn" id="3_d0e8g"]
+[ext_resource type="PackedScene" uid="uid://dxt50u12o4exj" path="res://Prefabs/Components/CharacterComponents/Eire/feather_fall.tscn" id="3_pq3a6"]
 
 [sub_resource type="GDScript" id="GDScript_g02fx"]
 script/source = "extends Character
@@ -9,8 +10,15 @@ script/source = "extends Character
 func _init():
 	character_id = CharacterStats.Character.EIRE
 
-func get_floaty_factor(): return 2
+var floaty_factor = 1:
+	set(value):
+		floaty_factor = value
+		on_gravity_changed.emit()
+var jump_factor = 1
+
+func get_floaty_factor(): return 2 * floaty_factor
 func get_max_health(): return 70
+func get_jump_height(): return 800 * jump_factor
 "
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pq3a6"]
@@ -34,3 +42,5 @@ script = SubResource("GDScript_g02fx")
 replication_config = SubResource("SceneReplicationConfig_pq3a6")
 
 [node name="Crossbow" parent="." unique_id=2092798113 instance=ExtResource("3_d0e8g")]
+
+[node name="FeatherFall" parent="." unique_id=2143988421 instance=ExtResource("3_pq3a6")]

@@ -26,7 +26,7 @@ func fire(mouse_position):
 	if cooldown_timer >= 0:
 		return
 	cooldown_timer = COOLDOWN
-	var character_position = parent.get_character_global_position()
+	var character_position = parent.get_character_node().global_position
 	var quarrel = quarrel_prefab.instantiate()
 	var mouse_normal = (mouse_position - character_position).normalized()
 	quarrel.position = character_position + mouse_normal * SPAWN_DISTANCE
@@ -51,7 +51,7 @@ func _process(_delta):
 	else:
 		is_mouse_down = false
 
-@rpc(\"call_local\", \"any_peer\")
+@rpc(\"call_local\", \"any_peer\", \"unreliable\")
 func attack(client_mouse_position):
 	on_attack_down.emit(client_mouse_position)
 "
