@@ -295,6 +295,8 @@ texture_filter = 1
 [node name="StaticBody2D" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=297011958]
 position = Vector2(324, 568)
 scale = Vector2(34.36, 2.52)
+collision_layer = 2
+collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D" unique_id=2076544715]
 position = Vector2(0, -2.38419e-07)
@@ -306,6 +308,8 @@ texture = ExtResource("1_2f75f")
 [node name="StaticBody2D2" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=844731364]
 position = Vector2(800, 414)
 scale = Vector2(34.36, 2.52)
+collision_layer = 2
+collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D2" unique_id=424627964]
 position = Vector2(0, -2.38419e-07)
@@ -317,6 +321,8 @@ texture = ExtResource("1_2f75f")
 [node name="StaticBody2D3" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=1581896023]
 position = Vector2(85, 302)
 scale = Vector2(3.74842, 19.5922)
+collision_layer = 2
+collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D3" unique_id=1606439499]
 position = Vector2(0, -2.38419e-07)
@@ -328,6 +334,8 @@ texture = ExtResource("1_2f75f")
 [node name="StaticBody2D4" type="StaticBody2D" parent="Level/LevelBlocks" unique_id=1504703476]
 position = Vector2(320, 318)
 scale = Vector2(11.36, 2.52)
+collision_layer = 2
+collision_mask = 7
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Level/LevelBlocks/StaticBody2D4" unique_id=1233396273]
 position = Vector2(0, -2.38419e-07)
@@ -349,7 +357,7 @@ position = Vector2(1150, 650)
 script = SubResource("GDScript_vgcuc")
 
 [node name="WeaponSpawner" type="MultiplayerSpawner" parent="." unique_id=1190194600]
-_spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s")
+_spawnable_scenes = PackedStringArray("uid://bh63axkor25rs", "uid://bmb7uqsa88f3s", "uid://bjcu1wfwlm0yb")
 spawn_path = NodePath("../Weapons")
 
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2146464543]

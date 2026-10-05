@@ -57,17 +57,17 @@ func jump():
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 1
-properties/1/path = NodePath("AnimatedSprite2D:visible")
+properties/1/path = NodePath("SpriteAnimator:flip_h")
 properties/1/spawn = false
 properties/1/replication_mode = 2
-properties/2/path = NodePath("SpriteAnimator:flip_h")
+properties/2/path = NodePath("SpriteAnimator:modulate")
 properties/2/spawn = false
 properties/2/replication_mode = 2
-properties/3/path = NodePath("SpriteAnimator:modulate")
-properties/3/spawn = false
+properties/3/path = NodePath("SpriteAnimator:animation")
+properties/3/spawn = true
 properties/3/replication_mode = 2
-properties/4/path = NodePath("SpriteAnimator:animation")
-properties/4/spawn = true
+properties/4/path = NodePath(".:visible")
+properties/4/spawn = false
 properties/4/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s81vj"]
@@ -75,6 +75,7 @@ size = Vector2(16, 16)
 
 [node name="Character" type="CharacterBody2D" unique_id=1035501638 node_paths=PackedStringArray("input") groups=["Player"]]
 texture_filter = 1
+collision_mask = 7
 script = SubResource("GDScript_7glg2")
 input = NodePath("PlayerInput")
 

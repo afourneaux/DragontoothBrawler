@@ -17,8 +17,9 @@ var is_descending = false
 
 func _ready():
 	super._ready()
-	parent.on_hurt.connect(reset)
 	character_node = parent.get_character_node()
+	if multiplayer.is_server():
+		parent.on_hurt.connect(reset)
 
 func _process(delta):
 	cooldown_timer -= delta

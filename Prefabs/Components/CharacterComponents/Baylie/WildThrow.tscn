@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://4o3rxk4bj0eh"]
+
+[sub_resource type="GDScript" id="GDScript_1m2y1"]
+script/source = "extends Weapon
+
+@export var input: WeaponInput
+
+var knife_prefab = preload(\"res://Prefabs/Components/CharacterComponents/Baylie/WildKnife.tscn\")
+
+const COOLDOWN = 0.2
+var cooldown_timer = 0
+var is_active = false
+const SPAWN_DISTANCE = 15
+const RANDOM_ANGLE_RANGE = PI / 4
+
+func _process(delta):
+	if input.is_mouse_down and cooldown_timer <= 0:
+		shoot.rpc_id(1, input.mouse_position)
+		cooldown_timer = COOLDOWN
+	cooldown_timer -= delta
+
+@rpc(\"any_peer\", \"call_local\", \"unreliable\")
+func shoot(mouse_position):
+	assert(multiplayer.is_server())
+	if cooldown_timer > 0:
+		return
+	cooldown_timer = COOLDOWN
+	var character_position = parent.get_character_node().global_position
+	var knife = knife_prefab.instantiate()
+	var mouse_normal = (mouse_position - character_position).normalized()
+	var aim_normal = (mouse_normal + Vector2.UP / 2).normalized()
+	var rotation_randomness = (randf() - 0.5) * RANDOM_ANGLE_RANGE
+	knife.position = character_position + aim_normal * SPAWN_DISTANCE
+	knife.rotation = aim_normal.angle() + rotation_randomness
+	knife.player_id = parent.player_id
+	parent.get_character_node().add_collision_exception_with(knife)
+	parent.get_weapons_node().add_child(knife, true)
+"
+
+[sub_resource type="GDScript" id="GDScript_ecfjn"]
+script/source = "extends WeaponInput
+
+var is_mouse_down = false
+
+func _process(_delta):
+	super._process(_delta)
+	is_mouse_down = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+"
+
+[node name="WildThrow" type="Node" unique_id=739971587 node_paths=PackedStringArray("input")]
+script = SubResource("GDScript_1m2y1")
+input = NodePath("Input")
+
+[node name="Input" type="Node2D" parent="." unique_id=1951468009]
+script = SubResource("GDScript_ecfjn")

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://xk2647mixgfi"]
 
 [ext_resource type="PackedScene" uid="uid://b50v2k81sqp2d" path="res://Prefabs/Components/CharacterComponents/_Shared/CharacterBase.tscn" id="1_pq3a6"]
+[ext_resource type="PackedScene" uid="uid://4o3rxk4bj0eh" path="res://Prefabs/Components/CharacterComponents/Baylie/WildThrow.tscn" id="2_ecfjn"]
 
 [sub_resource type="GDScript" id="GDScript_g02fx"]
 script/source = "extends Character
@@ -28,3 +29,5 @@ script = SubResource("GDScript_g02fx")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=743799817]
 replication_config = SubResource("SceneReplicationConfig_pq3a6")
+
+[node name="WildThrow" parent="." unique_id=739971587 instance=ExtResource("2_ecfjn")]

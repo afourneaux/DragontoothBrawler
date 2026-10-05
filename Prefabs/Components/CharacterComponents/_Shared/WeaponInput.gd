@@ -2,7 +2,7 @@ extends Node2D
 
 class_name WeaponInput
 
-var mouse_position
+var mouse_position: Vector2
 
 func _ready():
 	set_process(get_parent().get_parent().player_id == multiplayer.get_unique_id())

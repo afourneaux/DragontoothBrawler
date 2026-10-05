@@ -11,23 +11,16 @@ const DAMAGE = 25
 const FORCE = 50
 const SPEED = 500
 
-
 @export var replicated_position : Vector2
 @export var replicated_rotation : float
-@export var replicated_linear_velocity : Vector2
-@export var replicated_angular_velocity : float
 
 func _integrate_forces(_state):
 	if multiplayer.is_server():
 		replicated_position = position
 		replicated_rotation = rotation
-		replicated_linear_velocity = linear_velocity
-		replicated_angular_velocity = angular_velocity
 	else:
 		position = replicated_position
 		rotation = replicated_rotation
-		linear_velocity = replicated_linear_velocity
-		angular_velocity = replicated_angular_velocity
 
 func _ready():
 	if multiplayer.is_server():
@@ -38,7 +31,6 @@ func _ready():
 		Audio.play_sfx(\"Weapons/crossbow_shot\")
 	else:
 		Audio.play_sfx(\"Weapons/crossbow_shot\", false, 0.5)
-
 
 func _physics_process(_delta):
 	if multiplayer.is_server():
@@ -62,17 +54,13 @@ properties/0/replication_mode = 1
 properties/1/path = NodePath(".:replicated_rotation")
 properties/1/spawn = true
 properties/1/replication_mode = 1
-properties/2/path = NodePath(".:replicated_linear_velocity")
-properties/2/spawn = true
-properties/2/replication_mode = 1
-properties/3/path = NodePath(".:replicated_angular_velocity")
-properties/3/spawn = true
-properties/3/replication_mode = 1
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_eqn2e"]
 radius = 3.0
 
 [node name="Quarrel" type="RigidBody2D" unique_id=1078539868]
+collision_layer = 4
+collision_mask = 7
 continuous_cd = 1
 contact_monitor = true
 max_contacts_reported = 1

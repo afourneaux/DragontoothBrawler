@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://bjcu1wfwlm0yb"]
+
+[ext_resource type="Texture2D" uid="uid://dpw5gbn6tsy4i" path="res://Assets/Sprites/Projectiles/kunai.png" id="1_rdepm"]
+
+[sub_resource type="GDScript" id="GDScript_10alh"]
+script/source = "extends RigidBody2D
+
+var player_id: int
+
+const DAMAGE = 5
+const FORCE = 10
+const SPEED_BASE = 400
+const SPEED_RANGE = 200
+const ROTATION_SPEED_BASE = 10
+const ROTATION_SPEED_RANGE = 200
+var rotation_speed = 0
+
+@export var replicated_position : Vector2
+@export var replicated_rotation : float
+
+func _integrate_forces(_state):
+	if multiplayer.is_server():
+		replicated_position = position
+		replicated_rotation = rotation
+	else:
+		position = replicated_position
+		rotation = replicated_rotation
+
+func _ready():
+	if multiplayer.is_server():
+		var speed = SPEED_BASE + (randf() * SPEED_RANGE)
+		var direction = Vector2(speed, 0).rotated(rotation)
+		look_at(global_position + direction.normalized())
+		apply_impulse(direction)
+	if player_id == multiplayer.get_unique_id():
+		Audio.play_sfx(\"Weapons/crossbow_shot\")
+	else:
+		Audio.play_sfx(\"Weapons/crossbow_shot\", false, 0.5)
+	rotation_speed = ROTATION_SPEED_BASE + (randf() * ROTATION_SPEED_RANGE)
+	apply_torque_impulse(rotation_speed)
+
+func _on_hit(body):
+	if multiplayer.is_server():
+		if body.is_in_group(\"Player\"):
+			var body_data: Character = body.get_parent()
+			if body_data.player_id == player_id:
+				return
+			body_data.health -= DAMAGE
+			body.velocity += Vector2(FORCE, 0).rotated(rotation)
+		queue_free()
+"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rdepm"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_10alh"]
+properties/0/path = NodePath(".:replicated_position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:replicated_rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[node name="Knife" type="RigidBody2D" unique_id=287414002]
+texture_filter = 1
+collision_layer = 4
+collision_mask = 7
+continuous_cd = 1
+contact_monitor = true
+max_contacts_reported = 1
+script = SubResource("GDScript_10alh")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1706922784]
+texture = ExtResource("1_rdepm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=300989050]
+scale = Vector2(0.3, 0.3)
+shape = SubResource("CircleShape2D_rdepm")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1663425825]
+replication_config = SubResource("SceneReplicationConfig_10alh")
+
+[connection signal="body_entered" from="." to="." method="_on_hit"]
